@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-function CreatePoll() {
+const CreatePoll = () => {
   const [pollName, setPollName] = useState("");
   const [options, setOptions] = useState([""]); // Start with one empty option
   const [error, setError] = useState("");
@@ -46,7 +46,7 @@ function CreatePoll() {
 
   return (
     <div className="max-w-2xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg">
-      <h2 className="text-white text-3xl font-bold text-center mb-6">Create a Poll</h2>
+      <h2 className="text-white text-3xl font-bold text-center mb-6">Create Poll</h2>
       <form onSubmit={handleSubmit}>
         {/* Poll Name Input */}
         <div className="mb-4">
@@ -91,7 +91,7 @@ function CreatePoll() {
           <button
             type="button"
             onClick={addOption}
-            className="w-full mt-2 bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full mt-2 bg-gray-700 text-white font-semibold py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Add Option
           </button>
@@ -103,13 +103,13 @@ function CreatePoll() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-purple-600 text-white font-semibold py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full bg-gray-800 text-white font-semibold py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
           Create Poll
         </button>
       </form>
     </div>
   );
-}
+};
 
 export default CreatePoll;

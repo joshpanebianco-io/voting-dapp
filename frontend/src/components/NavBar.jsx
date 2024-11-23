@@ -1,7 +1,8 @@
 import { useState } from "react";
+import NavConnectWallet from "./NavConnectWallet";
 
 // eslint-disable-next-line react/prop-types
-const Navbar = ({ isConnected }) => {
+const Navbar = ({ isConnected, setIsConnected }) => {
   const [showAlert, setShowAlert] = useState(false); // State to control alert visibility
 
   const handleCreatePollClick = () => {
@@ -16,7 +17,7 @@ const Navbar = ({ isConnected }) => {
   };
 
   const handleActivePollClick = () => {
-    const section = document.getElementById("active-polls");
+    const section = document.getElementById("active-polls-section");
     if (section) {
       section.scrollIntoView({ behavior: "smooth" });
     }
@@ -26,16 +27,32 @@ const Navbar = ({ isConnected }) => {
     setShowAlert(false); // Close the alert
   };
 
+  const handleLogoClick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   return (
-    <nav className="bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 shadow-lg">
+    <nav className="bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 shadow-lg fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-white text-2xl font-semibold">
-          Decentralised Voting App
+        <div
+          className="text-white text-2xl font-semibold cursor-pointer"
+          onClick={handleLogoClick} // Scroll to top on click
+        >
+          DecentraVote
         </div>
 
         {/* Navigation Links */}
-        <div className="flex space-x-6">
+        <div className="flex space-x-6 items-center">
+          <button
+            onClick={handleCreatePollClick}
+            className="text-white text-lg font-medium hover:text-purple-300 transition-colors"
+          >
+            + Create Poll
+          </button>
           <button
             onClick={handleActivePollClick}
             className="text-white text-lg font-medium hover:text-purple-300 transition-colors"
@@ -43,11 +60,12 @@ const Navbar = ({ isConnected }) => {
             Active Polls
           </button>
           <button
-            onClick={handleCreatePollClick}
             className="text-white text-lg font-medium hover:text-purple-300 transition-colors"
           >
-            Create Poll
+            Results
           </button>
+          {/* Connect Wallet */}
+          <NavConnectWallet setIsConnected={setIsConnected} />
         </div>
       </div>
 

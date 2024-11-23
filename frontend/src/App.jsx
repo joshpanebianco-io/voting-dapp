@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ConnectWallet from "./components/ConnectWallet";
+import NavConnectWallet from "./components/NavConnectWallet";
 import Navbar from "./components/NavBar";
 import CreatePoll from "./components/CreatePoll";
 import ActivePoll from "./components/ActivePoll";
@@ -8,29 +9,39 @@ function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
 
   return (
-    <div className="bg-gray-800 min-h-screen relative">
+    <div className="bg-gray-800 min-h-screen relative overflow-y-auto">
       {/* Navbar pinned to the top */}
-      <Navbar isConnected={isConnected} className="sticky top-0 z-50" />
+      <Navbar
+        NavConnectWallet={NavConnectWallet}
+        isConnected={isConnected}
+        setIsConnected={setIsConnected}
+        className="sticky top-0 z-50 w-full h-16" // Fixed height for navbar and full width
+      />
 
       {/* ConnectWallet component */}
-      <div className="relative z-10 flex justify-center mt-4">
+      <div className="relative z-10 flex justify-center mt-5">
+        {" "}
+        {/* Adjusted padding-top to create space below navbar */}
         <ConnectWallet setIsConnected={setIsConnected} />
       </div>
 
       {/* Conditionally render CreatePoll only if connected */}
-      {isConnected ? (
+      {isConnected && (
         <div
           id="create-poll-section"
-          className="flex items-center justify-center mt-4"
+          className="min-h-screen flex items-center justify-center mt-2" // Reduced space between ConnectWallet and CreatePoll
         >
           <div className="w-full max-w-2xl">
             <CreatePoll />
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* ActivePoll Section */}
-      <div id="active-polls" className="mt-8">
+      <div
+        id="active-polls-section"
+        className="min-h-screen justify-center pt-48" // Added padding-top to create space below the fixed navbar
+      >
         <ActivePoll isConnected={isConnected} />
       </div>
 

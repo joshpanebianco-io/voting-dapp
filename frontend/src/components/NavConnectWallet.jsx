@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 // eslint-disable-next-line react/prop-types
-const ConnectWallet = ({ setIsConnected }) => {
+const NavConnectWallet = ({ setIsConnected }) => {
   const [address, setAddress] = useState(null);
 
+  // Connect to MetaMask wallet
   const connectWalletMetamask = async () => {
     if (window.ethereum) {
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const accounts = await provider.send("eth_requestAccounts", []);
+
         if (accounts.length > 0) {
           const signer = provider.getSigner();
           const walletAddress = await signer.getAddress();
-
+          
+          // Save address in localStorage
           localStorage.setItem("walletAddress", walletAddress);
           setAddress(walletAddress);
           setIsConnected(true); // Update connection status
@@ -29,6 +32,7 @@ const ConnectWallet = ({ setIsConnected }) => {
     }
   };
 
+  // Handle account changes and load saved address
   useEffect(() => {
     const handleAccountsChanged = (accounts) => {
       if (accounts.length === 0) {
@@ -36,9 +40,10 @@ const ConnectWallet = ({ setIsConnected }) => {
         setIsConnected(false); // Update connection status
         localStorage.removeItem("walletAddress");
       } else {
-        setAddress(accounts[0]);
+        const newAddress = accounts[0];
+        setAddress(newAddress);
         setIsConnected(true); // Update connection status
-        localStorage.setItem("walletAddress", accounts[0]);
+        localStorage.setItem("walletAddress", newAddress);
       }
     };
 
@@ -48,44 +53,32 @@ const ConnectWallet = ({ setIsConnected }) => {
       setIsConnected(true); // Update connection status
     }
 
+    // Listen for account changes
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", handleAccountsChanged);
     }
 
+    // Cleanup event listener on component unmount
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
       }
     };
   }, [setIsConnected]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      {/* Large Text Above Button */}
-      <div className="text-center text-white font-bold text-7xl sm:text-8xl mb-20 -mt-20 opacity-20">
-        <p>Welcome to the future of Voting</p>
-        {/* Smaller Text */}
-      </div>
-
-      {/* Connect Wallet Button */}
+    <div>
       <button
         onClick={connectWalletMetamask}
-        className="w-80 px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 text-white font-semibold text-xl rounded-lg shadow-md hover:bg-purple-600 focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
+        className="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 transition-colors"
+
       >
         {address
           ? `Connected: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`
           : "Connect Wallet"}
       </button>
-
-      {/* Large Text Below Button */}
-      <div className="text-center text-white font-bold text-4xl sm:text-5xl mt-20 opacity-40">
-        <p>Secure. Transparent. Immutable.</p>
-      </div>
     </div>
   );
 };
 
-export default ConnectWallet;
+export default NavConnectWallet;

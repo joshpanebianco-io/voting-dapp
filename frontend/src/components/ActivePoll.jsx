@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 
+// eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
   // Dummy data for active polls
   const [polls, setPolls] = useState([
@@ -48,16 +49,16 @@ const ActivePoll = ({ isConnected }) => {
       <h2 className="text-white text-3xl font-bold text-center mb-6">
         Active Polls
       </h2>
-      <div className="flex flex-wrap gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {polls.map((poll) => (
           <div
             key={poll.id}
-            className="flex-1 min-w-[300px] max-w-[48%] bg-white p-6 rounded-lg shadow-md"
+            className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
           >
             <h3 className="text-xl font-bold text-purple-600 mb-4">
               {poll.name}
             </h3>
-            <div className="mb-4">
+            <div className="mb-4 flex-grow">
               {poll.options.map((option, index) => (
                 <div key={index} className="flex items-center mb-2">
                   <input
@@ -81,12 +82,12 @@ const ActivePoll = ({ isConnected }) => {
             {!isParticipating[poll.id] ? (
               <button
                 onClick={() => handleParticipation(poll.id)}
-                className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-auto bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Participate
               </button>
             ) : (
-              <p className="text-green-600 font-bold text-center">
+              <p className="mt-auto text-green-600 font-bold text-center">
                 You can now vote!
               </p>
             )}
