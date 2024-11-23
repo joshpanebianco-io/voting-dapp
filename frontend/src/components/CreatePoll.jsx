@@ -1,9 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import PollManagerABI from "../abis/PollManager.json";
 
 const CreatePoll = () => {
   const [pollName, setPollName] = useState("");
   const [options, setOptions] = useState([""]); // Start with one empty option
+  const [duration, setDuration] = useState(""); // New state for poll duration
   const [error, setError] = useState("");
+  const [contract, setContract] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const contractAddress = "0x7C893a0915eF936D7701505806eE5e033ffb821e";
+
+  // Set up ethers.js provider and contract connection
+  useEffect(() => {
+    const initContract = async () => {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contractInstance = new ethers.Contract(contractAddress, PollManagerABI, signer);
+        setContract(contractInstance);
+      } catch (error) {
+        console.error("Error initializing contract:", error);
+        setError("Failed to initialize contract.");
+      }
+    };
+    initContract();
+  }, []);
 
   // Handle adding a new option
   const addOption = () => {
@@ -24,7 +47,7 @@ const CreatePoll = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!pollName.trim()) {
@@ -37,11 +60,28 @@ const CreatePoll = () => {
       return;
     }
 
+    if (!duration.trim() || isNaN(Number(duration)) || Number(duration) <= 0) {
+      setError("Poll duration must be a positive number (in minutes).");
+      return;
+    }
+
     setError("");
-    console.log("Poll Created:", { pollName, options });
-    alert("Poll successfully created!");
-    setPollName("");
-    setOptions([""]);
+    setLoading(true);
+
+    try {
+      // Interact with the smart contract
+      const tx = await contract.createPoll(pollName, options, Number(duration));
+      await tx.wait(); // Wait for the transaction to be mined
+      alert("Poll successfully created!");
+      setPollName("");
+      setOptions([""]);
+      setDuration("");
+    } catch (err) {
+      console.error("Error creating poll:", err);
+      setError("Failed to create poll.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,6 +100,22 @@ const CreatePoll = () => {
             onChange={(e) => setPollName(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter poll name"
+            required
+          />
+        </div>
+
+        {/* Poll Duration Input */}
+        <div className="mb-6">
+          <label htmlFor="duration" className="block text-white font-semibold mb-2">
+            Poll Duration (minutes):
+          </label>
+          <input
+            type="number"
+            id="duration"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter duration in minutes"
             required
           />
         </div>
@@ -104,8 +160,9 @@ const CreatePoll = () => {
         <button
           type="submit"
           className="w-full bg-gray-800 text-white font-semibold py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          disabled={loading}
         >
-          Create Poll
+          {loading ? "Creating Poll..." : "Create Poll"}
         </button>
       </form>
     </div>

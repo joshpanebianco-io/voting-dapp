@@ -73,10 +73,12 @@ const ConnectWallet = ({ setIsConnected }) => {
       {/* Connect Wallet Button */}
       <button
         onClick={connectWalletMetamask}
-        className="w-80 px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 text-white font-semibold text-xl rounded-lg shadow-md hover:bg-purple-600 focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
+        className="w-80 px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 text-white font-semibold text-xl rounded-lg shadow-md hover:bg-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
       >
         {address
-          ? `Connected: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+          ? `Connected: ${address.substring(0, 6)}...${address.substring(
+              address.length - 4
+            )}`
           : "Connect Wallet"}
       </button>
 

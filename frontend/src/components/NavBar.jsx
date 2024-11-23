@@ -39,7 +39,7 @@ const Navbar = ({ isConnected, setIsConnected }) => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
         <div
-          className="text-white text-2xl font-semibold cursor-pointer"
+          className="text-white text-2xl font-semibold cursor-pointer hover:text-purple-300 transition-colors"
           onClick={handleLogoClick} // Scroll to top on click
         >
           DecentraVote
@@ -51,7 +51,7 @@ const Navbar = ({ isConnected, setIsConnected }) => {
             onClick={handleCreatePollClick}
             className="text-white text-lg font-medium hover:text-purple-300 transition-colors"
           >
-            + Create Poll
+            Create Poll
           </button>
           <button
             onClick={handleActivePollClick}
