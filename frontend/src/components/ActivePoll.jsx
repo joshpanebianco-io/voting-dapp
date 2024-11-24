@@ -1,29 +1,49 @@
-import  { useState } from "react";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import PollRetriever from "../abis/PollRetriever.json";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
-  // Dummy data for active polls
-  const [polls, setPolls] = useState([
-    {
-      id: 1,
-      name: "Favorite Programming Language",
-      options: ["JavaScript", "Python", "C#", "Go"],
-    },
-    {
-      id: 2,
-      name: "Preferred Frontend Framework",
-      options: ["React", "Vue", "Angular", "Svelte"],
-    },
-    {
-      id: 3,
-      name: "Best Backend Language",
-      options: ["Node.js", "Ruby", "Java", "C++"],
-    },
-  ]);
-
+  const [polls, setPolls] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [isParticipating, setIsParticipating] = useState({});
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false);
+
+  // Contract details
+  const contractAddress = "0x4603b57cD18Be828FA0265921c88005E47a28670";
+
+  // Fetch polls from the blockchain
+  const fetchPolls = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contract = new ethers.Contract(
+        contractAddress,
+        PollRetriever,
+        provider
+      );
+
+      const pollsData = await contract.getActivePolls();
+      console.log("Raw Polls Data:", pollsData);
+
+      // Format polls data for use in the frontend
+      const formattedPolls = pollsData.map((poll) => ({
+        id: poll.pollId.toNumber(), // Convert BigNumber to regular number
+        name: poll.pollName,
+        options: poll.options,
+      }));
+
+      console.log("Formatted Polls:", formattedPolls);
+      setPolls(formattedPolls);
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isConnected) {
+      fetchPolls();
+    }
+  }, [isConnected]);
 
   // Handle option selection
   const handleOptionChange = (pollId, option) => {
@@ -33,7 +53,7 @@ const ActivePoll = ({ isConnected }) => {
   // Handle participation
   const handleParticipation = (pollId) => {
     if (!isConnected) {
-      setShowModal(true); // Show the modal if not connected
+      setShowModal(true);
       return;
     }
     setIsParticipating({ ...isParticipating, [pollId]: true });
@@ -67,7 +87,7 @@ const ActivePoll = ({ isConnected }) => {
                     name={`poll-${poll.id}`}
                     value={option}
                     onChange={() => handleOptionChange(poll.id, option)}
-                    disabled={!isParticipating[poll.id]} // Disable until participation starts
+                    disabled={!isParticipating[poll.id]}
                     className="mr-2 text-blue-500 focus:ring-blue-500"
                   />
                   <label
@@ -103,7 +123,7 @@ const ActivePoll = ({ isConnected }) => {
         >
           <div
             className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+            onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-bold text-center text-red-600">
               You must be connected to a wallet!

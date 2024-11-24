@@ -15,29 +15,41 @@
 		"name": "getActivePolls",
 		"outputs": [
 			{
-				"internalType": "uint256[]",
-				"name": "pollIds",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "pollNames",
-				"type": "string[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "durations",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "startTimes",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[][]",
-				"name": "pollOptions",
-				"type": "string[][]"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "pollId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "pollName",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "duration",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "string[]",
+						"name": "options",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct PollRetriever.Poll[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -48,29 +60,41 @@
 		"name": "getClosedPolls",
 		"outputs": [
 			{
-				"internalType": "uint256[]",
-				"name": "pollIds",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "pollNames",
-				"type": "string[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "durations",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "startTimes",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[][]",
-				"name": "pollOptions",
-				"type": "string[][]"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "pollId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "pollName",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "duration",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "string[]",
+						"name": "options",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct PollRetriever.Poll[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -87,34 +111,41 @@
 		"name": "getPoll",
 		"outputs": [
 			{
-				"internalType": "uint256",
-				"name": "pollId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "pollName",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "duration",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
-			},
-			{
-				"internalType": "string[]",
-				"name": "options",
-				"type": "string[]"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "pollId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "pollName",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "duration",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "string[]",
+						"name": "options",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct PollRetriever.Poll",
+				"name": "",
+				"type": "tuple"
 			}
 		],
 		"stateMutability": "view",
