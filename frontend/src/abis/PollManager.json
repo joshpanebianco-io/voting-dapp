@@ -1,103 +1,75 @@
 [
 	{
+		"anonymous": false,
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_pollManagerAddress",
-				"type": "address"
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "pollId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "duration",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string[]",
+				"name": "options",
+				"type": "string[]"
 			}
 		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
+		"name": "PollCreated",
+		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "getActivePolls",
-		"outputs": [
+		"inputs": [
 			{
-				"components": [
-					{
-						"internalType": "uint256",
-						"name": "pollId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "pollName",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "duration",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "startTime",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "isActive",
-						"type": "bool"
-					},
-					{
-						"internalType": "string[]",
-						"name": "options",
-						"type": "string[]"
-					}
-				],
-				"internalType": "struct PollRetriever.Poll[]",
-				"name": "",
-				"type": "tuple[]"
+				"internalType": "uint256",
+				"name": "_pollId",
+				"type": "uint256"
 			}
 		],
-		"stateMutability": "view",
+		"name": "closePoll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getClosedPolls",
-		"outputs": [
+		"inputs": [
 			{
-				"components": [
-					{
-						"internalType": "uint256",
-						"name": "pollId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "pollName",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "duration",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "startTime",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "isActive",
-						"type": "bool"
-					},
-					{
-						"internalType": "string[]",
-						"name": "options",
-						"type": "string[]"
-					}
-				],
-				"internalType": "struct PollRetriever.Poll[]",
-				"name": "",
-				"type": "tuple[]"
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_options",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_duration",
+				"type": "uint256"
 			}
 		],
-		"stateMutability": "view",
+		"name": "createPoll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -111,41 +83,72 @@
 		"name": "getPoll",
 		"outputs": [
 			{
-				"components": [
-					{
-						"internalType": "uint256",
-						"name": "pollId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "pollName",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "duration",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "startTime",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "isActive",
-						"type": "bool"
-					},
-					{
-						"internalType": "string[]",
-						"name": "options",
-						"type": "string[]"
-					}
-				],
-				"internalType": "struct PollRetriever.Poll",
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "duration",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			},
+			{
+				"internalType": "string[]",
+				"name": "options",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_pollId",
+				"type": "uint256"
+			}
+		],
+		"name": "getPollOptions",
+		"outputs": [
+			{
+				"internalType": "string[]",
 				"name": "",
-				"type": "tuple"
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_pollId",
+				"type": "uint256"
+			}
+		],
+		"name": "isPollActive",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -153,15 +156,72 @@
 	},
 	{
 		"inputs": [],
-		"name": "pollManager",
+		"name": "pollCount",
 		"outputs": [
 			{
-				"internalType": "contract PollManager",
+				"internalType": "uint256",
 				"name": "",
-				"type": "address"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "polls",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "duration",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "startTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_pollId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_optionIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "vote",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

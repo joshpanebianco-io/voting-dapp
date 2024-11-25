@@ -10,7 +10,7 @@ const CreatePoll = () => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const contractAddressPollManager = "0x0a5ACCf4a00D9D82Fa68A83E0ac073D616Fa162b";
+  const contractAddressPollManager = "0x2C457C7629Efb8E7602c95bc2da5D4848Bb65A47";
 
   useEffect(() => {
     const initContract = async () => {
