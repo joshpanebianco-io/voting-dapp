@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import PollRetriever from "../abis/PollRetriever.json";
+import PollRetrieverABI from "../abis/PollRetriever.json";
+import PollManagerABI from "../abis/PollManager.json";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
@@ -10,15 +11,15 @@ const ActivePoll = ({ isConnected }) => {
   const [showModal, setShowModal] = useState(false);
 
   // Contract details
-  const contractAddress = "0x4603b57cD18Be828FA0265921c88005E47a28670";
+  const contractAddressPollRetriever = "0x16D4F824F3c29139559b25bBF6073D08D31f9479";
 
   // Fetch polls from the blockchain
   const fetchPolls = async () => {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(
-        contractAddress,
-        PollRetriever,
+        contractAddressPollRetriever,
+        PollRetrieverABI,
         provider
       );
 
@@ -40,10 +41,8 @@ const ActivePoll = ({ isConnected }) => {
   };
 
   useEffect(() => {
-    if (isConnected) {
-      fetchPolls();
-    }
-  }, [isConnected]);
+    fetchPolls();
+  });
 
   // Handle option selection
   const handleOptionChange = (pollId, option) => {
