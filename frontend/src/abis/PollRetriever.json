@@ -152,25 +152,6 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_pollId",
-				"type": "uint256"
-			}
-		],
-		"name": "getPollOptions",
-		"outputs": [
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "pollManager",
 		"outputs": [
@@ -178,45 +159,6 @@
 				"internalType": "contract PollManager",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "polls",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "pollId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "pollName",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "duration",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
 			}
 		],
 		"stateMutability": "view",

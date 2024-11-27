@@ -4,6 +4,7 @@ import NavConnectWallet from "./components/NavConnectWallet";
 import Navbar from "./components/NavBar";
 import CreatePoll from "./components/CreatePoll";
 import ActivePoll from "./components/ActivePoll";
+import ClosedPoll from "./components/ClosedPoll";
 
 function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
@@ -40,9 +41,17 @@ function App() {
       {/* ActivePoll Section */}
       <div
         id="active-polls-section"
-        className="min-h-screen justify-center pt-48" // Added padding-top to create space below the fixed navbar
+        className="min-h-screen justify-center pt-36" // Added padding-top to create space below the fixed navbar
       >
         <ActivePoll isConnected={isConnected} />
+      </div>
+
+      {/* Closed Polls Section */}
+      <div
+        id="closed-polls-section"
+        className="min-h-screen justify-center pt-36" // Added padding-top to create space below the fixed navbar
+      >
+        <ClosedPoll isConnected={isConnected} />
       </div>
 
       {/* Additional space below ActivePoll */}

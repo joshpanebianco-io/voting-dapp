@@ -23,6 +23,13 @@ const Navbar = ({ isConnected, setIsConnected }) => {
     }
   };
 
+  const handleClosedPollClick = () => {
+    const section = document.getElementById("closed-polls-section");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const closeAlert = () => {
     setShowAlert(false); // Close the alert
   };
@@ -60,6 +67,7 @@ const Navbar = ({ isConnected, setIsConnected }) => {
             Active Polls
           </button>
           <button
+            onClick={handleClosedPollClick}
             className="text-white text-lg font-medium hover:text-purple-300 transition-colors"
           >
             Results

@@ -10,14 +10,18 @@ const CreatePoll = () => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const contractAddressPollManager = "0x2C457C7629Efb8E7602c95bc2da5D4848Bb65A47";
+  const contractAddressPollManager = import.meta.env.VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
   useEffect(() => {
     const initContract = async () => {
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contractInstance = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
+        const contractInstance = new ethers.Contract(
+          contractAddressPollManager,
+          PollManagerABI,
+          signer
+        );
         setContract(contractInstance);
       } catch (error) {
         console.error("Error initializing contract:", error);
@@ -80,10 +84,15 @@ const CreatePoll = () => {
 
   return (
     <div className="max-w-2xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg">
-      <h2 className="text-white text-3xl font-bold text-center mb-6">Create Poll</h2>
+      <h2 className="text-white text-3xl font-bold text-center mb-6">
+        Create Poll
+      </h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="pollName" className="block text-white font-semibold mb-2">
+          <label
+            htmlFor="pollName"
+            className="block text-white font-semibold mb-2"
+          >
             Poll Name:
           </label>
           <input
@@ -98,7 +107,10 @@ const CreatePoll = () => {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="duration" className="block text-white font-semibold mb-2">
+          <label
+            htmlFor="duration"
+            className="block text-white font-semibold mb-2"
+          >
             Poll Duration (minutes):
           </label>
           <input
