@@ -5,6 +5,7 @@ import Navbar from "./components/NavBar";
 import CreatePoll from "./components/CreatePoll";
 import ActivePoll from "./components/ActivePoll";
 import ClosedPoll from "./components/ClosedPoll";
+import ActiveWallets from "./components/ActiveWallets"; // Import ActiveWallets component
 
 function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
@@ -21,7 +22,6 @@ function App() {
 
       {/* ConnectWallet component */}
       <div className="relative z-10 flex justify-center mt-5">
-        {" "}
         {/* Adjusted padding-top to create space below navbar */}
         <ConnectWallet setIsConnected={setIsConnected} />
       </div>
@@ -56,6 +56,9 @@ function App() {
 
       {/* Additional space below ActivePoll */}
       <div className="bg-gray-800 mt-8 py-16"></div>
+
+      {/* Active Wallets Floating Component */}
+      <ActiveWallets isConnected={isConnected} /> {/* Floating active wallet count */}
     </div>
   );
 }

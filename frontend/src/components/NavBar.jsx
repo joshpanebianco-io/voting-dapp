@@ -74,6 +74,7 @@ const Navbar = ({ isConnected, setIsConnected }) => {
           </button>
           {/* Connect Wallet */}
           <NavConnectWallet setIsConnected={setIsConnected} />
+          
         </div>
       </div>
 

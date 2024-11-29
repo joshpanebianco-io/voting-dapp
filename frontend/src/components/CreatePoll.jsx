@@ -9,8 +9,10 @@ const CreatePoll = () => {
   const [error, setError] = useState("");
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Modal visibility state
 
-  const contractAddressPollManager = import.meta.env.VITE_POLLMANAGER_CONTRACT_ADDRESS;
+  const contractAddressPollManager = import.meta.env
+    .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
   useEffect(() => {
     const initContract = async () => {
@@ -70,7 +72,7 @@ const CreatePoll = () => {
     try {
       const tx = await contract.createPoll(pollName, options, Number(duration));
       await tx.wait();
-      alert("Poll successfully created!");
+      setShowSuccessModal(true); // Show success modal when poll is created
       setPollName("");
       setOptions(["", ""]);
       setDuration("");
@@ -82,17 +84,17 @@ const CreatePoll = () => {
     }
   };
 
+  // Close the success modal
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg">
-      <h2 className="text-white text-3xl font-bold text-center mb-6">
-        Create Poll
-      </h2>
+      <h2 className="text-white text-3xl font-bold text-center mb-6">Create Poll</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label
-            htmlFor="pollName"
-            className="block text-white font-semibold mb-2"
-          >
+          <label htmlFor="pollName" className="block text-white font-semibold mb-2">
             Poll Name:
           </label>
           <input
@@ -107,10 +109,7 @@ const CreatePoll = () => {
         </div>
 
         <div className="mb-6">
-          <label
-            htmlFor="duration"
-            className="block text-white font-semibold mb-2"
-          >
+          <label htmlFor="duration" className="block text-white font-semibold mb-2">
             Poll Duration (minutes):
           </label>
           <input
@@ -166,6 +165,39 @@ const CreatePoll = () => {
           {loading ? "Creating Poll..." : "Create Poll"}
         </button>
       </form>
+
+      {/* Loading Modal */}
+      {loading && (
+        <div className="modal">
+          <div className="blockchain">
+            <div className="block block-1"></div>
+            <div className="chain"></div>
+            <div className="block block-2"></div>
+            <div className="chain"></div>
+            <div className="block block-3"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="text-xl font-bold text-green-600 text-center">Success!</h3>
+            <p className="text-gray-800 font-medium text-center mt-4">
+              Your poll has been successfully created.
+            </p>
+            <div className="mt-6 text-center">
+              <button
+                onClick={closeSuccessModal}
+                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
