@@ -50,6 +50,11 @@
             "internalType": "string[]",
             "name": "options",
             "type": "string[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "voteCounts",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct PollRetriever.Poll[]",
@@ -100,6 +105,11 @@
             "internalType": "string[]",
             "name": "options",
             "type": "string[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "voteCounts",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct PollRetriever.Poll[]",
@@ -156,11 +166,64 @@
             "internalType": "string[]",
             "name": "options",
             "type": "string[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "voteCounts",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct PollRetriever.Poll",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "hasParticipated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "hasVoted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

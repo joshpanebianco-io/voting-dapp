@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
+import PollManagerABI from "../abis/PollManager.json";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
   const [polls, setPolls] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [isParticipating, setIsParticipating] = useState({});
+  const [hasVoted, setHasVoted] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const pollsPerPage = 6; // Number of polls per page
@@ -14,6 +16,8 @@ const ActivePoll = ({ isConnected }) => {
   // Contract details
   const contractAddressPollRetriever = import.meta.env
     .VITE_POLLRETRIEVER_CONTRACT_ADDRESS;
+  const contractAddressPollManager = import.meta.env
+    .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
   // Fetch polls from the blockchain
   const fetchPolls = async () => {
@@ -52,12 +56,67 @@ const ActivePoll = ({ isConnected }) => {
   };
 
   // Handle participation
-  const handleParticipation = (pollId) => {
+  const handleParticipation = async (pollId) => {
     if (!isConnected) {
       setShowModal(true);
       return;
     }
-    setIsParticipating({ ...isParticipating, [pollId]: true });
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddressPollManager,
+        PollManagerABI,
+        signer
+      );
+
+      // Call the participate function from the PollManager contract
+      await contract.participate(pollId);
+
+      // Set participation state
+      setIsParticipating({ ...isParticipating, [pollId]: true });
+    } catch (error) {
+      console.error("Error participating in poll:", error);
+    }
+  };
+
+  // Handle voting
+  const handleVoting = async (pollId) => {
+    if (!isConnected) {
+      setShowModal(true);
+      return;
+    }
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        contractAddressPollManager,
+        PollManagerABI,
+        signer
+      );
+
+      const selectedOption = selectedOptions[pollId];
+      if (!selectedOption) {
+        alert("Please select an option before voting.");
+        return;
+      }
+
+      // Find the index of the selected option
+      const poll = polls.find((poll) => poll.id === pollId);
+      const optionIndex = poll.options.indexOf(selectedOption);
+      if (optionIndex === -1) {
+        alert("Invalid option selected.");
+        return;
+      }
+
+      // Call the vote function from the PollManager contract with the pollId and option index
+      await contract.vote(pollId, optionIndex);
+
+      // Set voted state
+      setHasVoted({ ...hasVoted, [pollId]: true });
+    } catch (error) {
+      console.error("Error voting in poll:", error);
+    }
   };
 
   // Close the modal
@@ -146,7 +205,9 @@ const ActivePoll = ({ isConnected }) => {
                         name={`poll-${poll.id}`}
                         value={option}
                         onChange={() => handleOptionChange(poll.id, option)}
-                        disabled={!isParticipating[poll.id]}
+                        disabled={
+                          !isParticipating[poll.id] || hasVoted[poll.id]
+                        }
                         className="mr-2 text-blue-500 focus:ring-blue-500"
                       />
                       <label
@@ -174,10 +235,17 @@ const ActivePoll = ({ isConnected }) => {
                   >
                     Participate
                   </button>
-                ) : (
+                ) : hasVoted[poll.id] ? (
                   <p className="mt-auto text-green-600 font-bold text-center">
-                    You can now vote!
+                    You have voted!
                   </p>
+                ) : (
+                  <button
+                    onClick={() => handleVoting(poll.id)}
+                    className="mt-auto bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    Vote
+                  </button>
                 )}
               </div>
             ))}
@@ -189,17 +257,15 @@ const ActivePoll = ({ isConnected }) => {
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-blue-600 text-white py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none"
               >
                 Previous
               </button>
-              <span className="text-white font-semibold">
-                Page {currentPage} of {totalPages}
-              </span>
+              <span className="mx-4 text-white">{currentPage}</span>
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages}
-                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-blue-600 text-white py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none"
               >
                 Next
               </button>
@@ -208,27 +274,19 @@ const ActivePoll = ({ isConnected }) => {
         </>
       )}
 
-      {/* Modal for wallet connection prompt */}
+      {/* Modal for connecting wallet */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-gray-800 font-medium mb-4 text-center">
-              You must connect your wallet to participate in polls.
-            </p>
-            <div className="mt-6 text-center">
-              <button
-                onClick={closeModal}
-                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">
+              Please connect your wallet
+            </h3>
+            <button
+              onClick={closeModal}
+              className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

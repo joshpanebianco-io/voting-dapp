@@ -1,23 +1,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract PollManager {
+import "./NFTMintBurn.sol";
 
+contract PollManager {
     struct Poll {
         uint256 id;
         string name;
-        uint256 duration; // Duration in minutes (for reference)
-        uint256 startTime; 
-        uint256 endTime;   // New property to store poll end time
-        bool isActive;
+        uint256 duration;
+        uint256 startTime;
+        uint256 endTime;
         string[] options;
-        mapping(address => uint256) votes; // Address -> option index
+        uint256[] voteCounts; // Track votes for each option
+        address owner;
+        mapping(address => uint256) votes;
+        mapping(address => bool) hasVoted;
+        mapping(address => bool) hasParticipated;
     }
 
     uint256 public pollCount = 0;
-    mapping(uint256 => Poll) public polls;  // Mapping poll ID to Poll struct
+    mapping(uint256 => Poll) public polls;
+    NFTMintBurn private nftContract;
+
+    //mapping(uint256 => mapping(address => bool)) public hasParticipated;
+    mapping(uint256 => mapping(address => uint256)) private userTokenId; // Mapping to store tokenId for each poll and address
 
     event PollCreated(uint256 pollId, string name, uint256 duration, uint256 startTime, uint256 endTime, string[] options);
+    event Voted(uint256 pollId, address voter, uint256 optionIndex);
+
+    constructor(address _nftContractAddress) {
+        nftContract = NFTMintBurn(_nftContractAddress);
+    }
 
     function createPoll(string memory _name, string[] memory _options, uint256 _duration) public {
         require(_options.length >= 2, "Poll must have at least two options.");
@@ -29,32 +42,62 @@ contract PollManager {
         newPoll.id = pollCount;
         newPoll.name = _name;
         newPoll.options = _options;
+        newPoll.voteCounts = new uint256[](_options.length); // Initialize voteCounts to 0 for each option
         newPoll.duration = _duration;
         newPoll.startTime = block.timestamp;
-        newPoll.endTime = block.timestamp + (_duration * 60); // Convert minutes to seconds
-        newPoll.isActive = true;
+        newPoll.endTime = block.timestamp + (_duration * 60);
+        newPoll.owner = msg.sender;
 
         emit PollCreated(pollCount, _name, _duration, newPoll.startTime, newPoll.endTime, _options);
     }
 
-    function vote(uint256 _pollId, uint256 _optionIndex) public {
-        require(block.timestamp < polls[_pollId].endTime, "Poll has ended."); // Ensure voting is within duration
-        require(polls[_pollId].isActive, "Poll is not active.");
-        require(_optionIndex < polls[_pollId].options.length, "Invalid option.");
-        require(polls[_pollId].votes[msg.sender] == 0, "You have already voted.");
+    function participate(uint256 _pollId) public {
+        Poll storage poll = polls[_pollId];
 
-        polls[_pollId].votes[msg.sender] = _optionIndex;
+        require(block.timestamp < poll.endTime, "Poll has ended.");
+        require(!poll.hasParticipated[msg.sender], "You have already participated.");
+
+        // Mint an NFT for the user and associate it with the poll
+        uint256 tokenId = nftContract.mintNFT(msg.sender, _pollId);  // Assume mintNFT returns tokenId
+        userTokenId[_pollId][msg.sender] = tokenId;  // Store the tokenId for the user in this poll
+
+        poll.hasParticipated[msg.sender] = true;
+    }
+
+
+    function vote(uint256 _pollId, uint256 _optionIndex) public {
+        Poll storage poll = polls[_pollId];
+
+        require(block.timestamp < poll.endTime, "Poll has ended.");
+        require(!poll.hasVoted[msg.sender], "You have already voted in this poll.");
+
+        uint256 tokenId = userTokenId[_pollId][msg.sender]; // Retrieve the tokenId for this user and poll
+        uint256 pollIdAssociatedWithNFT = nftContract.getPollIdForToken(tokenId);
+        require(pollIdAssociatedWithNFT == _pollId, "You must hold the NFT associated with this poll.");
+
+        require(_optionIndex < poll.options.length, "Invalid option selected.");
+
+        // Increment the vote count for the selected option
+        poll.voteCounts[_optionIndex]++;
+
+        poll.votes[msg.sender] = _optionIndex;
+        poll.hasVoted[msg.sender] = true;
+
+        nftContract.burnNFT(tokenId);
+
+        emit Voted(_pollId, msg.sender, _optionIndex);
     }
 
     function isPollActive(uint256 _pollId) public view returns (bool) {
-        return block.timestamp < polls[_pollId].endTime && polls[_pollId].isActive;
+        return block.timestamp < polls[_pollId].endTime;
     }
 
     function closePoll(uint256 _pollId) public {
-        require(block.timestamp >= polls[_pollId].endTime, "Poll duration has not ended.");
-        require(polls[_pollId].isActive, "Poll is already closed.");
+        Poll storage poll = polls[_pollId];
 
-        polls[_pollId].isActive = false;
+        require(msg.sender == poll.owner, "Only the poll creator can close the poll.");
+
+        polls[_pollId].endTime = block.timestamp;
     }
 
     function getPollOptions(uint256 _pollId) public view returns (string[] memory) {
@@ -67,10 +110,17 @@ contract PollManager {
         uint256 duration,
         uint256 startTime,
         uint256 endTime,
-        bool isActive,
-        string[] memory options
+        string[] memory options,
+        uint256[] memory voteCounts,
+        uint256 timeRemaining
     ) {
         Poll storage poll = polls[_pollId];
-        return (poll.id, poll.name, poll.duration, poll.startTime, poll.endTime, poll.isActive, poll.options);
+        timeRemaining = poll.endTime > block.timestamp ? poll.endTime - block.timestamp : 0;
+        return (poll.id, poll.name, poll.duration, poll.startTime, poll.endTime, poll.options, poll.voteCounts, timeRemaining);
+    }
+
+    // New function to get tokenId for a specific poll and user
+    function getTokenIdForPoll(uint256 _pollId, address _user) public view returns (uint256) {
+        return userTokenId[_pollId][_user];
     }
 }

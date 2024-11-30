@@ -11,10 +11,15 @@ contract PollRetriever {
         string pollName;
         uint256 duration;
         uint256 startTime;
-        uint256 endTime;   // Include endTime
-        bool isActive;
+        uint256 endTime;
+        bool isActive; // Derived from `isPollActive`
         string[] options;
+        uint256[] voteCounts; // Add the vote counts for each option
     }
+
+    // Mappings to track participation and voting status of users
+    mapping(uint256 => mapping(address => bool)) public hasParticipated;  // Poll ID -> User Address -> Participation Status
+    mapping(uint256 => mapping(address => bool)) public hasVoted; 
 
     constructor(address _pollManagerAddress) {
         pollManager = PollManager(_pollManagerAddress);
@@ -22,35 +27,45 @@ contract PollRetriever {
 
     function getPoll(uint256 _pollId) public view returns (Poll memory) {
         (
-            uint256 pollId, 
-            string memory pollName, 
-            uint256 duration, 
-            uint256 startTime, 
-            uint256 endTime, 
-            bool isActive, 
-            string[] memory options
+            uint256 id,
+            string memory name,
+            uint256 duration,
+            uint256 startTime,
+            uint256 endTime,
+            string[] memory options,
+            uint256[] memory voteCounts,
         ) = pollManager.getPoll(_pollId);
 
-        return Poll(pollId, pollName, duration, startTime, endTime, isActive, options);
+        bool isActive = pollManager.isPollActive(_pollId);
+
+        return Poll(id, name, duration, startTime, endTime, isActive, options, voteCounts);
     }
 
     function getActivePolls() public view returns (Poll[] memory) {
-        uint256 activePollCount = 0;
+        uint256 activeCount = 0;
 
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
-            (, , , , uint256 endTime, bool isActive,) = pollManager.getPoll(i);
-            if (block.timestamp < endTime && isActive) {
-                activePollCount++;
+            if (pollManager.isPollActive(i)) {
+                activeCount++;
             }
         }
 
-        Poll[] memory activePolls = new Poll[](activePollCount);
+        Poll[] memory activePolls = new Poll[](activeCount);
         uint256 index = 0;
 
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
-            (uint256 pollId, string memory pollName, uint256 duration, uint256 startTime, uint256 endTime, bool isActive, string[] memory options) = pollManager.getPoll(i);
-            if (block.timestamp < endTime && isActive) {
-                activePolls[index] = Poll(pollId, pollName, duration, startTime, endTime, isActive, options);
+            if (pollManager.isPollActive(i)) {
+                (
+                    uint256 id,
+                    string memory name,
+                    uint256 duration,
+                    uint256 startTime,
+                    uint256 endTime,
+                    string[] memory options,
+                    uint256[] memory voteCounts,
+                ) = pollManager.getPoll(i);
+
+                activePolls[index] = Poll(id, name, duration, startTime, endTime, true, options, voteCounts);
                 index++;
             }
         }
@@ -59,22 +74,30 @@ contract PollRetriever {
     }
 
     function getClosedPolls() public view returns (Poll[] memory) {
-        uint256 closedPollCount = 0;
+        uint256 closedCount = 0;
 
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
-            (, , , , uint256 endTime, bool isActive,) = pollManager.getPoll(i);
-            if (block.timestamp > endTime || !isActive) {
-                closedPollCount++;
+            if (!pollManager.isPollActive(i)) {
+                closedCount++;
             }
         }
 
-        Poll[] memory closedPolls = new Poll[](closedPollCount);
+        Poll[] memory closedPolls = new Poll[](closedCount);
         uint256 index = 0;
 
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
-            (uint256 pollId, string memory pollName, uint256 duration, uint256 startTime, uint256 endTime, bool isActive, string[] memory options) = pollManager.getPoll(i);
-            if (block.timestamp > endTime || !isActive) {
-                closedPolls[index] = Poll(pollId, pollName, duration, startTime, endTime, isActive, options);
+            if (!pollManager.isPollActive(i)) {
+                (
+                    uint256 id,
+                    string memory name,
+                    uint256 duration,
+                    uint256 startTime,
+                    uint256 endTime,
+                    string[] memory options,
+                    uint256[] memory voteCounts,
+                ) = pollManager.getPoll(i);
+
+                closedPolls[index] = Poll(id, name, duration, startTime, endTime, false, options, voteCounts);
                 index++;
             }
         }
