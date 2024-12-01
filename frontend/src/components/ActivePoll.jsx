@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
 import PollManagerABI from "../abis/PollManager.json";
 
+// eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
   const [polls, setPolls] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState(() => {
@@ -19,6 +20,7 @@ const ActivePoll = ({ isConnected }) => {
   });
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showVoted, setShowVoted] = useState(false); // State to toggle showing voted polls
   const pollsPerPage = 6;
 
   const contractAddressPollRetriever = import.meta.env
@@ -133,11 +135,19 @@ const ActivePoll = ({ isConnected }) => {
     setShowModal(false);
   };
 
-  const indexOfLastPoll = currentPage * pollsPerPage;
-  const indexOfFirstPoll = indexOfLastPoll - pollsPerPage;
-  const currentPolls = polls.slice(indexOfFirstPoll, indexOfLastPoll);
+  // Filter polls based on whether the user has voted or not
+  const filteredPolls = showVoted
+    ? polls.filter((poll) => hasVoted[poll.id]) // Show voted polls
+    : polls.filter((poll) => !hasVoted[poll.id]); // Show polls user has not voted on
 
-  const totalPages = Math.ceil(polls.length / pollsPerPage);
+  // Paginate filtered polls
+  const currentPolls = filteredPolls.slice(
+    (currentPage - 1) * pollsPerPage,
+    currentPage * pollsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredPolls.length / pollsPerPage);
+
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
@@ -180,9 +190,15 @@ const ActivePoll = ({ isConnected }) => {
 
   return (
     <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg mt-8">
-      <h2 className="text-white text-3xl font-bold text-center mb-6">
-        Active Polls
-      </h2>
+      <div className="flex items-center justify-center mb-6">
+        <h2 className="text-white text-3xl font-bold mr-4">Active Polls</h2>
+        <button
+          onClick={() => setShowVoted(!showVoted)}
+          className="bg-gray-800 text-white py-1 px-3 rounded-lg hover:bg-gray-600 focus:outline-none text-sm align-middle"
+        >
+          {showVoted ? "Show Active" : "Show Voted"}
+        </button>
+      </div>
 
       {/* Conditional rendering for no active polls */}
       {polls.length === 0 ? (
@@ -201,27 +217,28 @@ const ActivePoll = ({ isConnected }) => {
                   {poll.name}
                 </h3>
                 <div className="mb-4 flex-grow">
-                {poll.options.map((option, index) => (
+                  {poll.options.map((option, index) => (
                     <div key={index} className="flex items-center mb-2">
-                        <input
+                      <input
                         type="radio"
                         id={`${poll.id}-${option}`}
                         name={`poll-${poll.id}`}
                         value={option}
                         checked={selectedOptions[poll.id] === option} // Ensure the radio button is checked
                         onChange={() => handleOptionChange(poll.id, option)}
-                        disabled={ !isParticipating[poll.id] || hasVoted[poll.id] }
+                        disabled={
+                          !isParticipating[poll.id] || hasVoted[poll.id]
+                        }
                         className="mr-2 text-blue-500 focus:ring-blue-500"
-                        />
-                        <label
+                      />
+                      <label
                         htmlFor={`${poll.id}-${option}`}
                         className="text-gray-800"
-                        >
+                      >
                         {option}
-                        </label>
+                      </label>
                     </div>
-                    ))}
-
+                  ))}
                 </div>
 
                 {/* Countdown Timer */}
@@ -235,18 +252,22 @@ const ActivePoll = ({ isConnected }) => {
                 {!isParticipating[poll.id] ? (
                   <button
                     onClick={() => handleParticipation(poll.id)}
-                    className="mt-auto bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-auto bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none"
+                    disabled={hasVoted[poll.id]}
                   >
                     Participate
                   </button>
                 ) : hasVoted[poll.id] ? (
-                  <p className="mt-auto text-green-600 font-bold text-center">
-                    You have voted!
-                  </p>
+                  <button
+                    disabled
+                    className="mt-auto bg-gray-400 text-white py-2 px-4 rounded-lg"
+                  >
+                    Voted
+                  </button>
                 ) : (
                   <button
                     onClick={() => handleVoting(poll.id)}
-                    className="mt-auto bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="mt-auto bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none"
                   >
                     Vote
                   </button>
@@ -278,16 +299,22 @@ const ActivePoll = ({ isConnected }) => {
         </>
       )}
 
-      {/* Modal for connecting wallet */}
+      {/* Modal for connection */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">
-              Please connect your wallet
-            </h3>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-[400px] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-lg text-center">
+              Please connect your wallet to participate or vote.
+            </p>
             <button
               onClick={closeModal}
-              className="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none"
+              className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
             >
               Close
             </button>
