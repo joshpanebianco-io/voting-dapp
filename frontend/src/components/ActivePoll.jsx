@@ -3,23 +3,29 @@ import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
 import PollManagerABI from "../abis/PollManager.json";
 
-// eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
   const [polls, setPolls] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState({});
-  const [isParticipating, setIsParticipating] = useState({});
-  const [hasVoted, setHasVoted] = useState({});
+  const [selectedOptions, setSelectedOptions] = useState(() => {
+    const saved = localStorage.getItem("selectedOptions");
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [isParticipating, setIsParticipating] = useState(() => {
+    const saved = localStorage.getItem("isParticipating");
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [hasVoted, setHasVoted] = useState(() => {
+    const saved = localStorage.getItem("hasVoted");
+    return saved ? JSON.parse(saved) : {};
+  });
   const [showModal, setShowModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // Track current page
-  const pollsPerPage = 6; // Number of polls per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const pollsPerPage = 6;
 
-  // Contract details
   const contractAddressPollRetriever = import.meta.env
     .VITE_POLLRETRIEVER_CONTRACT_ADDRESS;
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
-  // Fetch polls from the blockchain
   const fetchPolls = async () => {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -31,9 +37,8 @@ const ActivePoll = ({ isConnected }) => {
 
       const pollsData = await contract.getActivePolls();
 
-      // Format polls data for use in the frontend
       const formattedPolls = pollsData.map((poll) => ({
-        id: poll.pollId.toNumber(), // Convert BigNumber to regular number
+        id: poll.pollId.toNumber(),
         name: poll.pollName,
         options: poll.options,
         duration: poll.duration.toNumber(),
@@ -50,12 +55,23 @@ const ActivePoll = ({ isConnected }) => {
     fetchPolls();
   }, []);
 
-  // Handle option selection
+  // Save data to local storage on changes
+  useEffect(() => {
+    localStorage.setItem("selectedOptions", JSON.stringify(selectedOptions));
+  }, [selectedOptions]);
+
+  useEffect(() => {
+    localStorage.setItem("isParticipating", JSON.stringify(isParticipating));
+  }, [isParticipating]);
+
+  useEffect(() => {
+    localStorage.setItem("hasVoted", JSON.stringify(hasVoted));
+  }, [hasVoted]);
+
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
   };
 
-  // Handle participation
   const handleParticipation = async (pollId) => {
     if (!isConnected) {
       setShowModal(true);
@@ -70,17 +86,14 @@ const ActivePoll = ({ isConnected }) => {
         signer
       );
 
-      // Call the participate function from the PollManager contract
       await contract.participate(pollId);
 
-      // Set participation state
       setIsParticipating({ ...isParticipating, [pollId]: true });
     } catch (error) {
       console.error("Error participating in poll:", error);
     }
   };
 
-  // Handle voting
   const handleVoting = async (pollId) => {
     if (!isConnected) {
       setShowModal(true);
@@ -101,7 +114,6 @@ const ActivePoll = ({ isConnected }) => {
         return;
       }
 
-      // Find the index of the selected option
       const poll = polls.find((poll) => poll.id === pollId);
       const optionIndex = poll.options.indexOf(selectedOption);
       if (optionIndex === -1) {
@@ -109,27 +121,22 @@ const ActivePoll = ({ isConnected }) => {
         return;
       }
 
-      // Call the vote function from the PollManager contract with the pollId and option index
       await contract.vote(pollId, optionIndex);
 
-      // Set voted state
       setHasVoted({ ...hasVoted, [pollId]: true });
     } catch (error) {
       console.error("Error voting in poll:", error);
     }
   };
 
-  // Close the modal
   const closeModal = () => {
     setShowModal(false);
   };
 
-  // Pagination logic
   const indexOfLastPoll = currentPage * pollsPerPage;
   const indexOfFirstPoll = indexOfLastPoll - pollsPerPage;
   const currentPolls = polls.slice(indexOfFirstPoll, indexOfLastPoll);
 
-  // Handle page change
   const totalPages = Math.ceil(polls.length / pollsPerPage);
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -138,7 +145,6 @@ const ActivePoll = ({ isConnected }) => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Countdown Timer logic
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -146,28 +152,26 @@ const ActivePoll = ({ isConnected }) => {
   };
 
   const calculateRemainingTime = (poll) => {
-    const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds
-    const endTime = poll.startTime + poll.duration * 60; // End time in seconds
-    const timeRemaining = endTime - currentTime; // Time remaining in seconds
+    const currentTime = Math.floor(Date.now() / 1000);
+    const endTime = poll.startTime + poll.duration * 60;
+    const timeRemaining = endTime - currentTime;
     return timeRemaining > 0 ? timeRemaining : 0;
   };
 
-  // Update timer every second for each poll
   useEffect(() => {
     const interval = setInterval(() => {
-      setPolls(
-        (prevPolls) =>
-          prevPolls
-            .map((poll) => {
-              const timeRemaining = calculateRemainingTime(poll);
-              const isPollActive = timeRemaining > 0;
-              return {
-                ...poll,
-                timeRemaining,
-                isPollActive, // Update active status based on remaining time
-              };
-            })
-            .filter((poll) => poll.isPollActive) // Filter out inactive polls
+      setPolls((prevPolls) =>
+        prevPolls
+          .map((poll) => {
+            const timeRemaining = calculateRemainingTime(poll);
+            const isPollActive = timeRemaining > 0;
+            return {
+              ...poll,
+              timeRemaining,
+              isPollActive,
+            };
+          })
+          .filter((poll) => poll.isPollActive)
       );
     }, 1000);
 
@@ -197,27 +201,27 @@ const ActivePoll = ({ isConnected }) => {
                   {poll.name}
                 </h3>
                 <div className="mb-4 flex-grow">
-                  {poll.options.map((option, index) => (
+                {poll.options.map((option, index) => (
                     <div key={index} className="flex items-center mb-2">
-                      <input
+                        <input
                         type="radio"
                         id={`${poll.id}-${option}`}
                         name={`poll-${poll.id}`}
                         value={option}
+                        checked={selectedOptions[poll.id] === option} // Ensure the radio button is checked
                         onChange={() => handleOptionChange(poll.id, option)}
-                        disabled={
-                          !isParticipating[poll.id] || hasVoted[poll.id]
-                        }
+                        disabled={ !isParticipating[poll.id] || hasVoted[poll.id] }
                         className="mr-2 text-blue-500 focus:ring-blue-500"
-                      />
-                      <label
+                        />
+                        <label
                         htmlFor={`${poll.id}-${option}`}
                         className="text-gray-800"
-                      >
+                        >
                         {option}
-                      </label>
+                        </label>
                     </div>
-                  ))}
+                    ))}
+
                 </div>
 
                 {/* Countdown Timer */}
