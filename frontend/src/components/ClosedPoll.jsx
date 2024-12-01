@@ -65,7 +65,7 @@ const ClosedPoll = () => {
         {currentPolls.map((poll) => (
           <div
             key={poll.id}
-            className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
+            className="w-[350px] h-[300px] bg-white p-6 rounded-lg shadow-md flex flex-col"
           >
             <h3 className="text-xl font-bold text-purple-600 mb-4">
               {poll.name}
