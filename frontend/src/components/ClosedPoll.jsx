@@ -26,8 +26,8 @@ const ClosedPoll = () => {
 
       // Format the polls data for use in the frontend
       const formattedPolls = pollsData.map((poll) => ({
-        id: poll.pollId.toNumber(), // Convert BigNumber to regular number
-        name: poll.pollName,
+        id: poll.id.toNumber(), // Convert BigNumber to regular number
+        name: poll.name,
         options: poll.options,
       }));
 

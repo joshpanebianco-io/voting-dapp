@@ -13,7 +13,7 @@ contract PollManager {
         string[] options;
         uint256[] voteCounts; // Track votes for each option
         address owner;
-        mapping(address => uint256) votes;
+        mapping(address => uint256) userVote;
         mapping(address => bool) hasVoted;
         mapping(address => bool) hasParticipated;
     }
@@ -80,7 +80,7 @@ contract PollManager {
         // Increment the vote count for the selected option
         poll.voteCounts[_optionIndex]++;
 
-        poll.votes[msg.sender] = _optionIndex;
+        poll.userVote[msg.sender] = _optionIndex;
         poll.hasVoted[msg.sender] = true;
 
         nftContract.burnNFT(tokenId);
@@ -119,8 +119,31 @@ contract PollManager {
         return (poll.id, poll.name, poll.duration, poll.startTime, poll.endTime, poll.options, poll.voteCounts, timeRemaining);
     }
 
+
+    function getUserVote(uint256 _pollId, address _user) public view returns (uint256) {
+    Poll storage poll = polls[_pollId];
+    require(poll.hasVoted[_user], "User has not voted in this poll.");
+    return poll.userVote[_user];
+    }
+
+
     // New function to get tokenId for a specific poll and user
     function getTokenIdForPoll(uint256 _pollId, address _user) public view returns (uint256) {
         return userTokenId[_pollId][_user];
     }
+
+    // Getter function to retrieve if the user has voted in a poll
+    function hasVoted(uint256 _pollId, address _user) public view returns (bool) {
+        require(_pollId <= pollCount, "Poll does not exist");
+        Poll storage poll = polls[_pollId];
+        return poll.hasVoted[_user];
+    }
+
+    // Getter function to retrieve if the user has participated in a poll
+    function hasParticipated(uint256 _pollId, address _user) public view returns (bool) {
+        require(_pollId <= pollCount, "Poll does not exist");
+        Poll storage poll = polls[_pollId];
+        return poll.hasParticipated[_user];
+    }
+
 }

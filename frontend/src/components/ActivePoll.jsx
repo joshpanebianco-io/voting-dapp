@@ -6,21 +6,12 @@ import PollManagerABI from "../abis/PollManager.json";
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
   const [polls, setPolls] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState(() => {
-    const saved = localStorage.getItem("selectedOptions");
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [isParticipating, setIsParticipating] = useState(() => {
-    const saved = localStorage.getItem("isParticipating");
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [hasVoted, setHasVoted] = useState(() => {
-    const saved = localStorage.getItem("hasVoted");
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [isParticipating, setIsParticipating] = useState({});
+  const [hasVoted, setHasVoted] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showVoted, setShowVoted] = useState(false); // State to toggle showing voted polls
+  const [showVoted, setShowVoted] = useState(false);
   const pollsPerPage = 6;
 
   const contractAddressPollRetriever = import.meta.env
@@ -36,18 +27,50 @@ const ActivePoll = ({ isConnected }) => {
         PollRetrieverABI,
         provider
       );
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
 
       const pollsData = await contract.getActivePolls();
+      const pollManagerContract = new ethers.Contract(
+        contractAddressPollManager,
+        PollManagerABI,
+        provider
+      );
 
-      const formattedPolls = pollsData.map((poll) => ({
-        id: poll.pollId.toNumber(),
-        name: poll.pollName,
-        options: poll.options,
-        duration: poll.duration.toNumber(),
-        startTime: poll.startTime.toNumber(),
-      }));
+      const pollsWithStatus = await Promise.all(
+        pollsData.map(async (poll) => {
+          const pollId = poll.id.toNumber();
+          const hasUserParticipated = await pollManagerContract.hasParticipated(
+            pollId,
+            userAddress
+          );
+          const hasUserVoted = await pollManagerContract.hasVoted(
+            pollId,
+            userAddress
+          );
+          let userVote = null;
 
-      setPolls(formattedPolls);
+          if (hasUserVoted) {
+            const voteIndex = await pollManagerContract.getUserVote(
+              pollId,
+              userAddress
+            );
+            userVote = poll.options[voteIndex];
+          }
+
+          return {
+            ...poll,
+            id: pollId,
+            hasParticipated: hasUserParticipated,
+            hasVoted: hasUserVoted,
+            userVote: userVote, // Store the user's vote
+            duration: poll.duration.toNumber(), // Include duration
+            startTime: poll.startTime.toNumber(), // Include startTime
+          };
+        })
+      );
+
+      setPolls(pollsWithStatus);
     } catch (error) {
       console.error("Error fetching polls:", error);
     }
@@ -56,19 +79,6 @@ const ActivePoll = ({ isConnected }) => {
   useEffect(() => {
     fetchPolls();
   }, []);
-
-  // Save data to local storage on changes
-  useEffect(() => {
-    localStorage.setItem("selectedOptions", JSON.stringify(selectedOptions));
-  }, [selectedOptions]);
-
-  useEffect(() => {
-    localStorage.setItem("isParticipating", JSON.stringify(isParticipating));
-  }, [isParticipating]);
-
-  useEffect(() => {
-    localStorage.setItem("hasVoted", JSON.stringify(hasVoted));
-  }, [hasVoted]);
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
@@ -90,7 +100,15 @@ const ActivePoll = ({ isConnected }) => {
 
       await contract.participate(pollId);
 
+      // Update participation status
       setIsParticipating({ ...isParticipating, [pollId]: true });
+
+      // Update the poll state to reflect that the user has participated
+      setPolls((prevPolls) =>
+        prevPolls.map((poll) =>
+          poll.id === pollId ? { ...poll, hasParticipated: true } : poll
+        )
+      );
     } catch (error) {
       console.error("Error participating in poll:", error);
     }
@@ -125,7 +143,14 @@ const ActivePoll = ({ isConnected }) => {
 
       await contract.vote(pollId, optionIndex);
 
+      // Update voting status
       setHasVoted({ ...hasVoted, [pollId]: true });
+
+      // Update selected option to reflect the vote
+      setSelectedOptions({
+        ...selectedOptions,
+        [pollId]: selectedOption,
+      });
     } catch (error) {
       console.error("Error voting in poll:", error);
     }
@@ -135,12 +160,10 @@ const ActivePoll = ({ isConnected }) => {
     setShowModal(false);
   };
 
-  // Filter polls based on whether the user has voted or not
   const filteredPolls = showVoted
-    ? polls.filter((poll) => hasVoted[poll.id]) // Show voted polls
-    : polls.filter((poll) => !hasVoted[poll.id]); // Show polls user has not voted on
+    ? polls.filter((poll) => poll.hasVoted)
+    : polls.filter((poll) => !poll.hasVoted);
 
-  // Paginate filtered polls
   const currentPolls = filteredPolls.slice(
     (currentPage - 1) * pollsPerPage,
     currentPage * pollsPerPage
@@ -200,7 +223,6 @@ const ActivePoll = ({ isConnected }) => {
         </button>
       </div>
 
-      {/* Conditional rendering for no active polls */}
       {polls.length === 0 ? (
         <p className="text-white text-lg text-center">
           There are currently no active polls.
@@ -210,30 +232,39 @@ const ActivePoll = ({ isConnected }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ml-7">
             {currentPolls.map((poll) => (
               <div
-                key={poll.id}
+                key={poll.id} // Changed from poll.pollId to poll.id
                 className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
               >
                 <h3 className="text-xl font-bold text-purple-600 mb-4">
-                  {poll.name}
+                  {poll.name} {/* Changed from poll.pollName to poll.name */}
                 </h3>
                 <div className="mb-4 flex-grow">
                   {poll.options.map((option, index) => (
-                    <div key={index} className="flex items-center mb-2">
+                    <div
+                      key={index}
+                      className={`flex items-center mb-2 ${
+                        poll.hasVoted && poll.userVote === option
+                          ? "bg-white-100"
+                          : ""
+                      }`}
+                    >
                       <input
                         type="radio"
                         id={`${poll.id}-${option}`}
                         name={`poll-${poll.id}`}
                         value={option}
-                        checked={selectedOptions[poll.id] === option} // Ensure the radio button is checked
+                        checked={poll.userVote === option} // Show the checked option persistently
                         onChange={() => handleOptionChange(poll.id, option)}
-                        disabled={
-                          !isParticipating[poll.id] || hasVoted[poll.id]
-                        }
+                        disabled={!poll.hasParticipated || poll.hasVoted}
                         className="mr-2 text-blue-500 focus:ring-blue-500"
                       />
                       <label
                         htmlFor={`${poll.id}-${option}`}
-                        className="text-gray-800"
+                        className={`text-gray-800 ${
+                          poll.hasVoted && poll.userVote === option
+                            ? "font-bold text-purple-600"
+                            : ""
+                        }`}
                       >
                         {option}
                       </label>
@@ -241,7 +272,6 @@ const ActivePoll = ({ isConnected }) => {
                   ))}
                 </div>
 
-                {/* Countdown Timer */}
                 <div className="text-center font-bold mb-4">
                   <p className="text-black inline">Poll closes in: </p>
                   <p className="text-blue-600 inline">
@@ -249,15 +279,15 @@ const ActivePoll = ({ isConnected }) => {
                   </p>
                 </div>
 
-                {!isParticipating[poll.id] ? (
+                {!poll.hasParticipated ? (
                   <button
                     onClick={() => handleParticipation(poll.id)}
                     className="mt-auto bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none"
-                    disabled={hasVoted[poll.id]}
+                    disabled={poll.hasVoted}
                   >
                     Participate
                   </button>
-                ) : hasVoted[poll.id] ? (
+                ) : poll.hasVoted ? (
                   <button
                     disabled
                     className="mt-auto bg-gray-400 text-white py-2 px-4 rounded-lg"
@@ -267,7 +297,7 @@ const ActivePoll = ({ isConnected }) => {
                 ) : (
                   <button
                     onClick={() => handleVoting(poll.id)}
-                    className="mt-auto bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none"
+                    className="mt-auto bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none"
                   >
                     Vote
                   </button>
@@ -299,22 +329,18 @@ const ActivePoll = ({ isConnected }) => {
         </>
       )}
 
-      {/* Modal for connection */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg w-[400px] flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-lg text-center">
-              Please connect your wallet to participate or vote.
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto">
+            <h3 className="text-xl font-bold text-red-600 mb-4">
+              Please Connect Your Wallet
+            </h3>
+            <p className="text-gray-800 mb-4">
+              To participate in a poll, please connect your wallet first.
             </p>
             <button
               onClick={closeModal}
-              className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none w-full"
             >
               Close
             </button>

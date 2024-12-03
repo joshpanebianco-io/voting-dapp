@@ -7,8 +7,8 @@ contract PollRetriever {
     PollManager public pollManager;
 
     struct Poll {
-        uint256 pollId;
-        string pollName;
+        uint256 id;
+        string name;
         uint256 duration;
         uint256 startTime;
         uint256 endTime;
@@ -16,10 +16,6 @@ contract PollRetriever {
         string[] options;
         uint256[] voteCounts; // Add the vote counts for each option
     }
-
-    // Mappings to track participation and voting status of users
-    mapping(uint256 => mapping(address => bool)) public hasParticipated;  // Poll ID -> User Address -> Participation Status
-    mapping(uint256 => mapping(address => bool)) public hasVoted; 
 
     constructor(address _pollManagerAddress) {
         pollManager = PollManager(_pollManagerAddress);
@@ -42,19 +38,68 @@ contract PollRetriever {
     }
 
     function getActivePolls() public view returns (Poll[] memory) {
-        uint256 activeCount = 0;
+        uint256 activePollCount = 0;
 
+        // Count active polls where the user hasn't voted yet or hasn't participated
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
             if (pollManager.isPollActive(i)) {
-                activeCount++;
+                bool participated = pollManager.hasParticipated(i, msg.sender);
+                bool voted = pollManager.hasVoted(i, msg.sender);
+
+                if (!participated || (participated && !voted)) {
+                    activePollCount++;
+                }
             }
         }
 
-        Poll[] memory activePolls = new Poll[](activeCount);
-        uint256 index = 0;
+        // Create array to store the results
+        Poll[] memory activePolls = new Poll[](activePollCount);
+        uint256 pollIndex = 0;
 
+        // Populate the list of active polls
         for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
             if (pollManager.isPollActive(i)) {
+                bool participated = pollManager.hasParticipated(i, msg.sender);
+                bool voted = pollManager.hasVoted(i, msg.sender);
+
+                // Add to list if the user hasn't participated or hasn't voted yet
+                if (!participated || (participated && !voted)) {
+                    (
+                        uint256 id,
+                        string memory name,
+                        uint256 duration,
+                        uint256 startTime,
+                        uint256 endTime,
+                        string[] memory options,
+                        uint256[] memory voteCounts,
+                    ) = pollManager.getPoll(i);
+
+                    activePolls[pollIndex] = Poll(id, name, duration, startTime, endTime, true, options, voteCounts);
+                    pollIndex++;
+                }
+            }
+        }
+
+        return activePolls;
+    }
+
+    // Returns the polls that the user has voted on
+    function getVotedPolls() public view returns (Poll[] memory) {
+        uint256 votedPollCount = 0;
+
+        // Count how many polls the user has voted on
+        for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
+            if (pollManager.hasVoted(i, msg.sender)) {
+                votedPollCount++;
+            }
+        }
+
+        Poll[] memory votedPolls = new Poll[](votedPollCount);
+        uint256 index = 0;
+
+        // Populate the list of voted polls
+        for (uint256 i = 1; i <= pollManager.pollCount(); i++) {
+            if (pollManager.hasVoted(i, msg.sender)) {
                 (
                     uint256 id,
                     string memory name,
@@ -65,12 +110,12 @@ contract PollRetriever {
                     uint256[] memory voteCounts,
                 ) = pollManager.getPoll(i);
 
-                activePolls[index] = Poll(id, name, duration, startTime, endTime, true, options, voteCounts);
+                votedPolls[index] = Poll(id, name, duration, startTime, endTime, true, options, voteCounts);
                 index++;
             }
         }
 
-        return activePolls;
+        return votedPolls;
     }
 
     function getClosedPolls() public view returns (Poll[] memory) {
@@ -104,4 +149,7 @@ contract PollRetriever {
 
         return closedPolls;
     }
+
+
+    
 }
