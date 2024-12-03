@@ -27,8 +27,6 @@ const ActivePoll = ({ isConnected }) => {
         PollRetrieverABI,
         provider
       );
-      const signer = provider.getSigner();
-      const userAddress = await signer.getAddress();
 
       const pollsData = await contract.getActivePolls();
       const pollManagerContract = new ethers.Contract(
@@ -37,6 +35,10 @@ const ActivePoll = ({ isConnected }) => {
         provider
       );
 
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
+
+      // Fetch participation and voting status for each poll
       const pollsWithStatus = await Promise.all(
         pollsData.map(async (poll) => {
           const pollId = poll.id.toNumber();
@@ -48,6 +50,7 @@ const ActivePoll = ({ isConnected }) => {
             pollId,
             userAddress
           );
+
           let userVote = null;
 
           if (hasUserVoted) {
@@ -63,9 +66,10 @@ const ActivePoll = ({ isConnected }) => {
             id: pollId,
             hasParticipated: hasUserParticipated,
             hasVoted: hasUserVoted,
-            userVote: userVote, // Store the user's vote
             duration: poll.duration.toNumber(), // Include duration
             startTime: poll.startTime.toNumber(), // Include startTime
+            options: poll.options,
+            userVote: userVote,
           };
         })
       );
@@ -244,7 +248,7 @@ const ActivePoll = ({ isConnected }) => {
                       key={index}
                       className={`flex items-center mb-2 ${
                         poll.hasVoted && poll.userVote === option
-                          ? "bg-white-100"
+                          ? "bg-blue-100"
                           : ""
                       }`}
                     >
@@ -253,7 +257,12 @@ const ActivePoll = ({ isConnected }) => {
                         id={`${poll.id}-${option}`}
                         name={`poll-${poll.id}`}
                         value={option}
-                        checked={poll.userVote === option} // Show the checked option persistently
+                        checked={
+                          poll.hasVoted
+                            ? poll.userVote === option
+                            : selectedOptions[poll.id] === option
+                        }
+                        // Show the checked option persistently
                         onChange={() => handleOptionChange(poll.id, option)}
                         disabled={!poll.hasParticipated || poll.hasVoted}
                         className="mr-2 text-blue-500 focus:ring-blue-500"
@@ -297,7 +306,7 @@ const ActivePoll = ({ isConnected }) => {
                 ) : (
                   <button
                     onClick={() => handleVoting(poll.id)}
-                    className="mt-auto bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none"
+                    className="mt-auto bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none"
                   >
                     Vote
                   </button>
