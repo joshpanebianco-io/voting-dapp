@@ -4,12 +4,13 @@ import PollManagerABI from "../abis/PollManager.json";
 
 const CreatePoll = () => {
   const [pollName, setPollName] = useState("");
-  const [options, setOptions] = useState(["", ""]); // Default to two empty options
-  const [duration, setDuration] = useState(""); // New state for poll duration
+  const [options, setOptions] = useState(["", ""]);
+  const [duration, setDuration] = useState("");
   const [error, setError] = useState("");
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // Modal visibility state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
@@ -68,11 +69,17 @@ const CreatePoll = () => {
 
     setError("");
     setLoading(true);
+    setLoadingMessage("Confirm transaction.");
 
     try {
+      // Send the transaction to MetaMask and wait for confirmation
       const tx = await contract.createPoll(pollName, options, Number(duration));
-      await tx.wait();
-      setShowSuccessModal(true); // Show success modal when poll is created
+
+      // Wait for the transaction to be mined
+      setLoadingMessage("Your poll is being created...");
+      await tx.wait(); // This ensures we wait for the transaction to be mined before proceeding.
+
+      setShowSuccessModal(true); // Show success modal once poll is created
       setPollName("");
       setOptions(["", ""]);
       setDuration("");
@@ -81,6 +88,7 @@ const CreatePoll = () => {
       setError("Failed to create poll.");
     } finally {
       setLoading(false);
+      setLoadingMessage(""); // Clear the loading message
     }
   };
 
@@ -91,10 +99,15 @@ const CreatePoll = () => {
 
   return (
     <div className="max-w-2xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg">
-      <h2 className="text-white text-3xl font-bold text-center mb-6">Create Poll</h2>
+      <h2 className="text-white text-3xl font-bold text-center mb-6">
+        Create Poll
+      </h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="pollName" className="block text-white font-semibold mb-2">
+          <label
+            htmlFor="pollName"
+            className="block text-white font-semibold mb-2"
+          >
             Poll Name:
           </label>
           <input
@@ -109,7 +122,10 @@ const CreatePoll = () => {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="duration" className="block text-white font-semibold mb-2">
+          <label
+            htmlFor="duration"
+            className="block text-white font-semibold mb-2"
+          >
             Poll Duration (minutes):
           </label>
           <input
@@ -168,23 +184,23 @@ const CreatePoll = () => {
 
       {/* Loading Modal */}
       {loading && (
-        <div className="modal">
-          <div className="blockchain">
-            <div className="block block-1"></div>
-            <div className="chain"></div>
-            <div className="block block-2"></div>
-            <div className="chain"></div>
-            <div className="block block-3"></div>
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 -mb-10">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className="text-xl font-bold text-center text-gray-800">
+              {loadingMessage}
+            </h3>
           </div>
         </div>
       )}
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
-            <h3 className="text-xl font-bold text-green-600 text-center">Success!</h3>
-            <p className="text-gray-800 font-medium text-center mt-4">
+            <h3 className="text-xl font-bold text-green-600 text-center">
+              Success!
+            </h3>
+            <p className="text-gray-800 font-bold text-xl text-center mt-4">
               Your poll has been successfully created.
             </p>
             <div className="mt-6 text-center">
