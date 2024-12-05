@@ -6,6 +6,7 @@ import CreatePoll from "./components/CreatePoll";
 import ActivePoll from "./components/ActivePoll";
 import ClosedPoll from "./components/ClosedPoll";
 import ActiveWallets from "./components/ActiveWallets"; // Import ActiveWallets component
+import UseCase from "./components/UseCase";
 
 function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
@@ -19,13 +20,11 @@ function App() {
         setIsConnected={setIsConnected}
         className="sticky top-0 z-50 w-full h-16" // Fixed height for navbar and full width
       />
-
       {/* ConnectWallet component */}
       <div className="relative z-10 flex justify-center mt-5">
         {/* Adjusted padding-top to create space below navbar */}
         <ConnectWallet setIsConnected={setIsConnected} />
       </div>
-
       {/* Conditionally render CreatePoll only if connected */}
       {isConnected && (
         <div
@@ -37,7 +36,6 @@ function App() {
           </div>
         </div>
       )}
-
       {/* ActivePoll Section */}
       <div
         id="active-polls-section"
@@ -45,7 +43,6 @@ function App() {
       >
         <ActivePoll isConnected={isConnected} />
       </div>
-
       {/* Closed Polls Section */}
       <div
         id="closed-polls-section"
@@ -53,12 +50,19 @@ function App() {
       >
         <ClosedPoll isConnected={isConnected} />
       </div>
-
-      {/* Additional space below ActivePoll */}
+      {/* Use Case Section */}
+      <div
+        id="use-case-section" // Added id for consistency and navigation
+        className="min-h-screen justify-center pt-36" // Same padding as other sections
+      >
+        <UseCase />
+      </div>
+      
+      {/* Additional space below */}
       <div className="bg-gray-800 mt-8 py-16"></div>
-
       {/* Active Wallets Floating Component */}
-      <ActiveWallets isConnected={isConnected} /> {/* Floating active wallet count */}
+      <ActiveWallets isConnected={isConnected} />{" "}
+      {/* Floating active wallet count */}
     </div>
   );
 }

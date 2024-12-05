@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
+import LoadingSpinner from "./utility/LoadingSpinner";
 
 const ClosedPoll = () => {
   const [polls, setPolls] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true); // Loading state
   const [pollsPerPage] = useState(6); // Adjust how many polls per page
 
   // Contract details
@@ -52,7 +54,11 @@ const ClosedPoll = () => {
   };
 
   useEffect(() => {
+    setLoading(true); // Start loading
     fetchPolls(); // Fetch polls when the component is mounted
+    setTimeout(() => {
+      setLoading(false); // Hide loading after 1 second
+    }, 900);
   }, []);
 
   return (
@@ -61,50 +67,58 @@ const ClosedPoll = () => {
         Closed Polls
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ml-7">
-        {currentPolls.map((poll) => (
-          <div
-            key={poll.id}
-            className="w-[350px] h-[300px] bg-white p-6 rounded-lg shadow-md flex flex-col"
-          >
-            <h3 className="text-xl font-bold text-purple-600 mb-4">
-              {poll.name}
-            </h3>
-            <div className="mb-4 flex-grow">
-              {poll.options.map((option, index) => (
-                <p key={index} className="text-gray-800 mb-2">
-                  - {option}
+      {/* Spinner for loading state */}
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          {/* Poll Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ml-7">
+            {currentPolls.map((poll) => (
+              <div
+                key={poll.id}
+                className="w-[350px] h-[300px] bg-white p-6 rounded-lg shadow-md flex flex-col"
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">
+                  {poll.name}
+                </h3>
+                <div className="mb-4 flex-grow">
+                  {poll.options.map((option, index) => (
+                    <p key={index} className="text-gray-800 mb-2">
+                      - {option}
+                    </p>
+                  ))}
+                </div>
+                <p className="mt-auto text-red-600 font-bold text-center">
+                  Poll Closed
                 </p>
-              ))}
-            </div>
-            <p className="mt-auto text-red-600 font-bold text-center">
-              Poll Closed
-            </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && ( // Only show pagination if there are multiple pages
-        <div className="flex justify-center items-center mt-6">
-          <button
-            onClick={prevPage}
-            disabled={currentPage === 1}
-            className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <span className="text-white font-semibold">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-            className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
+          {/* Pagination Controls */}
+          {totalPages > 1 && ( // Only show pagination if there are multiple pages
+            <div className="flex justify-center items-center mt-6">
+              <button
+                onClick={prevPage}
+                disabled={currentPage === 1}
+                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-white font-semibold">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={nextPage}
+                disabled={currentPage === totalPages}
+                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

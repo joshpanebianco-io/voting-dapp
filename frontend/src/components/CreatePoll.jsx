@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PollManagerABI from "../abis/PollManager.json";
+import ModalLoadingSpinner from "./utility/ModalLoadingSpinner";
 
 const CreatePoll = () => {
   const [pollName, setPollName] = useState("");
@@ -69,14 +70,14 @@ const CreatePoll = () => {
 
     setError("");
     setLoading(true);
-    setLoadingMessage("Confirm transaction.");
+    setLoadingMessage("Confirm transaction");
 
     try {
       // Send the transaction to MetaMask and wait for confirmation
       const tx = await contract.createPoll(pollName, options, Number(duration));
 
       // Wait for the transaction to be mined
-      setLoadingMessage("Your poll is being created...");
+      setLoadingMessage("Your poll is being created");
       await tx.wait(); // This ensures we wait for the transaction to be mined before proceeding.
 
       setShowSuccessModal(true); // Show success modal once poll is created
@@ -188,6 +189,9 @@ const CreatePoll = () => {
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
             <h3 className="text-xl font-bold text-center text-gray-800">
               {loadingMessage}
+              <div className="mt-4">
+                <ModalLoadingSpinner />
+              </div>
             </h3>
           </div>
         </div>

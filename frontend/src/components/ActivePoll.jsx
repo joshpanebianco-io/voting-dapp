@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
 import PollManagerABI from "../abis/PollManager.json";
+import LoadingSpinner from "./utility/LoadingSpinner";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
@@ -245,28 +246,22 @@ const ActivePoll = ({ isConnected }) => {
 
   return (
     <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg mt-8">
-      {/* Loading spinner */}
+      {/* Poll section */}
+      <div className="flex items-center justify-center mb-6">
+        <h2 className="text-white text-3xl font-bold mr-4">Active Polls</h2>
+        {isConnected && (
+          <button
+            onClick={() => setShowVoted(!showVoted)}
+            className="bg-gray-800 text-white py-1 px-3 rounded-lg hover:bg-gray-600 focus:outline-none text-sm align-middle"
+          >
+            {showVoted ? "Show Active" : "Show Voted"}
+          </button>
+        )}
+      </div>
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="flex justify-center items-center h-screen">
-            <div className="w-16 h-16 border-4 border-t-4 border-gray-300 border-solid rounded-full animate-spin border-t-blue-500"></div>
-          </div>
-        </div>
+        <LoadingSpinner />
       ) : (
         <>
-          {/* Poll section */}
-          <div className="flex items-center justify-center mb-6">
-            <h2 className="text-white text-3xl font-bold mr-4">Active Polls</h2>
-            {isConnected && (
-              <button
-                onClick={() => setShowVoted(!showVoted)}
-                className="bg-gray-800 text-white py-1 px-3 rounded-lg hover:bg-gray-600 focus:outline-none text-sm align-middle"
-              >
-                {showVoted ? "Show Active" : "Show Voted"}
-              </button>
-            )}
-          </div>
-
           {polls.length === 0 ? (
             <p className="text-white text-lg text-center">
               There are currently no active polls.
