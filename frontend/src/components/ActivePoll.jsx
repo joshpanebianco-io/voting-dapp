@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
 import PollManagerABI from "../abis/PollManager.json";
 import LoadingSpinner from "./utility/LoadingSpinner";
+import ModalLoadingSpinner from "./utility/ModalLoadingSpinner";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
@@ -14,6 +15,9 @@ const ActivePoll = ({ isConnected }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showVoted, setShowVoted] = useState(false);
   const [loading, setLoading] = useState(true); // Loading state
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState("");
   const pollsPerPage = 6;
 
   const contractAddressPollRetriever = import.meta.env
@@ -122,6 +126,7 @@ const ActivePoll = ({ isConnected }) => {
       setShowModal(true);
       return;
     }
+
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -131,7 +136,16 @@ const ActivePoll = ({ isConnected }) => {
         signer
       );
 
-      await contract.participate(pollId);
+      setModalLoading(true);
+      setLoadingMessage("Confirm transaction");
+
+      const transaction = await contract.participate(pollId);
+
+      setLoadingMessage("Your voting token is being generated");
+
+      await transaction.wait();
+
+      setShowSuccessModal("Your voting token has been successfully generated"); 
 
       // Update participation status
       setIsParticipating({ ...isParticipating, [pollId]: true });
@@ -144,7 +158,15 @@ const ActivePoll = ({ isConnected }) => {
       );
     } catch (error) {
       console.error("Error participating in poll:", error);
+    } finally {
+      setModalLoading(false);
+      setLoadingMessage("");
     }
+  };
+
+  // Close the success modal
+  const closeSuccessModal = () => {
+    setShowSuccessModal("");
   };
 
   const handleVoting = async (pollId) => {
@@ -174,7 +196,16 @@ const ActivePoll = ({ isConnected }) => {
         return;
       }
 
-      await contract.vote(pollId, optionIndex);
+      setModalLoading(true);
+      setLoadingMessage("Confirm transaction");
+
+      const transaction = await contract.vote(pollId, optionIndex);
+
+      setLoadingMessage("Your vote is being submitted");
+
+      await transaction.wait();
+
+      setShowSuccessModal("Your vote has been successfully submitted");
 
       // Update voting status
       setHasVoted({ ...hasVoted, [pollId]: true });
@@ -186,6 +217,9 @@ const ActivePoll = ({ isConnected }) => {
       });
     } catch (error) {
       console.error("Error voting in poll:", error);
+    } finally {
+      setModalLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -349,20 +383,23 @@ const ActivePoll = ({ isConnected }) => {
                 ))}
               </div>
 
-              {totalPages > 1 && (
+              {/* Pagination controls */}
+              {totalPages > 1 && ( // Only show pagination if there are multiple pages
                 <div className="flex justify-center items-center mt-6">
                   <button
                     onClick={prevPage}
                     disabled={currentPage === 1}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none"
+                    className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
-                  <span className="mx-4 text-white">{currentPage}</span>
+                  <span className="text-white font-semibold ml-2 mr-2">
+                    {currentPage} of {totalPages}
+                  </span>
                   <button
                     onClick={nextPage}
                     disabled={currentPage === totalPages}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none"
+                    className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -371,7 +408,43 @@ const ActivePoll = ({ isConnected }) => {
             </>
           )}
 
-          {/* Modal */}
+          {/* Loading Modal */}
+          {modalLoading && (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 -mb-10">
+              <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+                <h3 className="text-xl font-bold text-center text-gray-800">
+                  {loadingMessage}
+                  <div className="mt-4">
+                    <ModalLoadingSpinner />
+                  </div>
+                </h3>
+              </div>
+            </div>
+          )}
+
+          {/* Success Modal */}
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+                <h3 className="text-xl font-bold text-green-600 text-center">
+                  Success!
+                </h3>
+                <p className="text-gray-800 font-bold text-xl text-center mt-4">
+                  { showSuccessModal }
+                </p>
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={closeSuccessModal}
+                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Connect Wallet Modal */}
           {showModal && (
             <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto">

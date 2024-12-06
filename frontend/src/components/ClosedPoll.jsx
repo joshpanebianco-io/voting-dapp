@@ -102,17 +102,17 @@ const ClosedPoll = () => {
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="text-white font-semibold">
-                Page {currentPage} of {totalPages}
+              <span className="text-white font-semibold ml-2 mr-2">
+                {currentPage} of {totalPages}
               </span>
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages}
-                className="bg-white text-blue-600 font-bold py-2 px-4 mx-2 rounded-lg shadow hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
