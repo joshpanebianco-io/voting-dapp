@@ -27,11 +27,24 @@ const ClosedPoll = () => {
       const pollsData = await contract.getClosedPolls();
 
       // Format the polls data for use in the frontend
-      const formattedPolls = pollsData.map((poll) => ({
-        id: poll.id.toNumber(), // Convert BigNumber to regular number
-        name: poll.name,
-        options: poll.options,
-      }));
+      const formattedPolls = await Promise.all(
+        pollsData.map(async (poll) => {
+          const voteCounts = poll.voteCounts.map((vote) => vote.toNumber());
+          const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
+          const options = poll.options;
+
+          return {
+            id: poll.id.toNumber(), // Convert BigNumber to regular number
+            name: poll.name,
+            options,
+            voteCounts,
+            totalVotes,
+            percentages: voteCounts.map((count) =>
+              totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0
+            ),
+          };
+        })
+      );
 
       setPolls(formattedPolls);
     } catch (error) {
@@ -77,16 +90,31 @@ const ClosedPoll = () => {
             {currentPolls.map((poll) => (
               <div
                 key={poll.id}
-                className="w-[350px] h-[300px] bg-white p-6 rounded-lg shadow-md flex flex-col"
+                className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
               >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">
+                <h3 className="text-xl font-bold text-purple-600 mb-6">
                   {poll.name}
                 </h3>
-                <div className="mb-4 flex-grow">
+                <div className="mb-4 flex-grow overflow-auto max-h-[250px] scrollbar-hide">
                   {poll.options.map((option, index) => (
-                    <p key={index} className="text-gray-800 mb-2">
-                      - {option}
-                    </p>
+                    <div key={index} className="mb-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-gray-800 mb-1 font-semibold">
+                          {option}
+                        </p>
+                        <p className="text-gray-600 font-semibold">
+                          {poll.voteCounts[index]} ({poll.percentages[index]}%)
+                        </p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-lg h-2">
+                        <div
+                          className="bg-blue-600 h-full rounded-lg"
+                          style={{
+                            width: `${poll.percentages[index]}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
                 <p className="mt-auto text-red-600 font-bold text-center">
@@ -102,7 +130,7 @@ const ClosedPoll = () => {
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-gray-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -112,7 +140,7 @@ const ClosedPoll = () => {
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages}
-                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-gray-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
