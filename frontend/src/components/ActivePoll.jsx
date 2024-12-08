@@ -4,6 +4,9 @@ import PollRetrieverABI from "../abis/PollRetriever.json";
 import PollManagerABI from "../abis/PollManager.json";
 import LoadingSpinner from "./utility/LoadingSpinner";
 import ModalLoadingSpinner from "./utility/ModalLoadingSpinner";
+import { useNavigate, useLocation } from "react-router-dom";
+import PollDetails from "./PollDetails";
+import Pagination from "./utility/Pagination";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
@@ -13,12 +16,20 @@ const ActivePoll = ({ isConnected }) => {
   const [hasVoted, setHasVoted] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showVoted, setShowVoted] = useState(false);
+  const [showVoted, setShowVoted] = useState(() => {
+    const savedShowVoted = localStorage.getItem("showVoted");
+    return savedShowVoted ? JSON.parse(savedShowVoted) : false;
+  });
   const [loading, setLoading] = useState(true); // Loading state
   const [loadingMessage, setLoadingMessage] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState("");
+  const [selectedPoll, setSelectedPoll] = useState(null);
+  const [showPollModal, setShowPollModal] = useState(null);
   const pollsPerPage = 6;
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const contractAddressPollRetriever = import.meta.env
     .VITE_POLLRETRIEVER_CONTRACT_ADDRESS;
@@ -104,18 +115,59 @@ const ActivePoll = ({ isConnected }) => {
   useEffect(() => {
     const loadPolls = async () => {
       setLoading(true); // Start loading
-
-      // Fetch polls data
       await fetchPolls();
-
-      // Ensure the loading state persists for at least 1 second
       setTimeout(() => {
         setLoading(false); // Hide loading after 1 second
       }, 900);
     };
-
     loadPolls();
   }, [isConnected]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPolls((prevPolls) =>
+        prevPolls
+          .map((poll) => {
+            const timeRemaining = calculateRemainingTime(poll);
+            const isPollActive = timeRemaining > 0;
+            return {
+              ...poll,
+              timeRemaining,
+              isPollActive,
+            };
+          })
+          .filter((poll) => poll.isPollActive)
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const pollIdFromUrl = new URLSearchParams(location.search).get("pollId");
+    if (pollIdFromUrl) {
+      setShowPollModal(true);
+      setSelectedPoll(parseInt(pollIdFromUrl, 10)); // Set the pollId from the URL
+    }
+  }, [location.search]); // Re-run when the URL changes
+
+  useEffect(() => {
+    const savedShowVoted = localStorage.getItem("showVoted");
+    if (savedShowVoted !== null) {
+      setShowVoted(JSON.parse(savedShowVoted)); // Parse and set the saved state
+    }
+  }, []);
+
+  // Save the 'showVoted' state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("showVoted", JSON.stringify(showVoted)); // Save as string
+  }, [showVoted]);
+
+  const closePollModal = () => {
+    setShowPollModal(false);
+    setSelectedPoll(null); // Reset selected poll
+    navigate(""); // Remove pollId from the URL
+  };
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
@@ -138,18 +190,12 @@ const ActivePoll = ({ isConnected }) => {
 
       setModalLoading(true);
       setLoadingMessage("Confirm transaction");
-
       const transaction = await contract.participate(pollId);
-
       setLoadingMessage("Your voting token is being generated");
-
       await transaction.wait();
-
-      setShowSuccessModal("Your voting token has been successfully generated"); 
-
+      setShowSuccessModal("Your voting token has been successfully generated");
       // Update participation status
       setIsParticipating({ ...isParticipating, [pollId]: true });
-
       // Update the poll state to reflect that the user has participated
       setPolls((prevPolls) =>
         prevPolls.map((poll) =>
@@ -162,11 +208,6 @@ const ActivePoll = ({ isConnected }) => {
       setModalLoading(false);
       setLoadingMessage("");
     }
-  };
-
-  // Close the success modal
-  const closeSuccessModal = () => {
-    setShowSuccessModal("");
   };
 
   const handleVoting = async (pollId) => {
@@ -198,18 +239,12 @@ const ActivePoll = ({ isConnected }) => {
 
       setModalLoading(true);
       setLoadingMessage("Confirm transaction");
-
       const transaction = await contract.vote(pollId, optionIndex);
-
       setLoadingMessage("Your vote is being submitted");
-
       await transaction.wait();
-
       setShowSuccessModal("Your vote has been successfully submitted");
-
       // Update voting status
       setHasVoted({ ...hasVoted, [pollId]: true });
-
       // Update selected option to reflect the vote
       setSelectedOptions({
         ...selectedOptions,
@@ -221,6 +256,16 @@ const ActivePoll = ({ isConnected }) => {
       setModalLoading(false);
       setLoadingMessage("");
     }
+  };
+
+  const handlePollClick = (pollId) => {
+    setSelectedPoll(pollId);
+    setShowPollModal(true);
+    navigate(`?pollId=${pollId}`); // Update the URL with the pollId
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal("");
   };
 
   const closeModal = () => {
@@ -258,26 +303,6 @@ const ActivePoll = ({ isConnected }) => {
     return timeRemaining > 0 ? timeRemaining : 0;
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPolls((prevPolls) =>
-        prevPolls
-          .map((poll) => {
-            const timeRemaining = calculateRemainingTime(poll);
-            const isPollActive = timeRemaining > 0;
-            return {
-              ...poll,
-              timeRemaining,
-              isPollActive,
-            };
-          })
-          .filter((poll) => poll.isPollActive)
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg mt-8">
       {/* Poll section */}
@@ -308,7 +333,10 @@ const ActivePoll = ({ isConnected }) => {
                     key={poll.id}
                     className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
                   >
-                    <h3 className="text-xl font-bold text-purple-600 mb-4">
+                    <h3
+                      className="text-xl font-bold text-purple-600 mb-4"
+                      onClick={() => handlePollClick(poll.id)}
+                    >
                       {poll.name}
                     </h3>
                     <div className="mb-4 flex-grow">
@@ -384,27 +412,12 @@ const ActivePoll = ({ isConnected }) => {
               </div>
 
               {/* Pagination controls */}
-              {totalPages > 1 && ( // Only show pagination if there are multiple pages
-                <div className="flex justify-center items-center mt-6">
-                  <button
-                    onClick={prevPage}
-                    disabled={currentPage === 1}
-                    className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-white font-semibold ml-2 mr-2">
-                    {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages}
-                    className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                prevPage={prevPage}
+                nextPage={nextPage}
+              />
             </>
           )}
 
@@ -430,7 +443,7 @@ const ActivePoll = ({ isConnected }) => {
                   Success!
                 </h3>
                 <p className="text-gray-800 font-bold text-xl text-center mt-4">
-                  { showSuccessModal }
+                  {showSuccessModal}
                 </p>
                 <div className="mt-6 text-center">
                   <button
@@ -442,6 +455,21 @@ const ActivePoll = ({ isConnected }) => {
                 </div>
               </div>
             </div>
+          )}
+
+          {showPollModal && selectedPoll && (
+            <PollDetails
+              showPollModal={showPollModal}
+              selectedPoll={selectedPoll}
+              currentPolls={currentPolls}
+              selectedOptions={selectedOptions}
+              handleOptionChange={handleOptionChange}
+              handleParticipation={handleParticipation}
+              handleVoting={handleVoting}
+              handlePollClick={handlePollClick}
+              closePollModal={closePollModal}
+              formatTime={formatTime}
+            />
           )}
 
           {/* Connect Wallet Modal */}

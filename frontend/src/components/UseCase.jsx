@@ -10,6 +10,11 @@ const UseCase = () => {
         </h3>
         <ul className="list-disc list-inside space-y-4 text-gray-700">
           <li>
+            <strong className="text-purple-600">Decentralization:</strong> By
+            distributing the voting data across a decentralized network, no
+            single entity can control or manipulate the results.
+          </li>
+          <li>
             <strong className="text-purple-600">
               Transparency & Auditabilty:
             </strong>{" "}
@@ -25,11 +30,6 @@ const UseCase = () => {
             <strong className="text-purple-600">Immutability:</strong> Once a
             vote is cast and added to the blockchain, it cannot be altered,
             ensuring the integrity of the voting record.
-          </li>
-          <li>
-            <strong className="text-purple-600">Decentralization:</strong> By
-            distributing the voting data across a decentralized network, no
-            single entity can control or manipulate the results.
           </li>
           <li>
             <strong className="text-purple-600">Anonymity and Privacy:</strong>{" "}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import PollRetrieverABI from "../abis/PollRetriever.json";
 import LoadingSpinner from "./utility/LoadingSpinner";
+import Pagination from "./utility/Pagination";
 
 const ClosedPoll = () => {
   const [polls, setPolls] = useState([]);
@@ -125,27 +126,12 @@ const ClosedPoll = () => {
           </div>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && ( // Only show pagination if there are multiple pages
-            <div className="flex justify-center items-center mt-6">
-              <button
-                onClick={prevPage}
-                disabled={currentPage === 1}
-                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-gray-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="text-white font-semibold ml-2 mr-2">
-                {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={nextPage}
-                disabled={currentPage === totalPages}
-                className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-gray-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            prevPage={prevPage}
+            nextPage={nextPage}
+          />
         </>
       )}
     </div>
