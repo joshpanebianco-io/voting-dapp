@@ -9,6 +9,7 @@ import ActiveWallets from "./components/ActiveWallets"; // Import ActiveWallets 
 import UseCase from "./components/UseCase";
 import { BrowserRouter as Router } from "react-router-dom";
 
+
 function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
 

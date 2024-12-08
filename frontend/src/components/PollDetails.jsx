@@ -1,7 +1,7 @@
 // PollModal.jsx
 // eslint-disable-next-line no-unused-vars
 import React from "react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const PollDetails = ({
   showPollModal,
@@ -18,7 +18,7 @@ const PollDetails = ({
   if (!showPollModal || !selectedPoll) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-100 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-100">
       <div className="bg-blue-600 p-6 rounded-lg shadow-lg">
         {currentPolls
           .filter((poll) => poll.id === selectedPoll)
@@ -27,12 +27,28 @@ const PollDetails = ({
               key={poll.id}
               className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
             >
-              <h3
+              {/* <h3
                 className="text-xl font-bold text-purple-600 mb-4"
                 onClick={() => handlePollClick(poll.id)}
               >
                 {poll.name}
-              </h3>
+              </h3> */}
+
+              <div className="justify-between flex">
+                <h3
+                  className="text-xl font-bold text-purple-600 mb-4"
+                  onClick={() => handlePollClick(poll.id)}
+                >
+                  {poll.name}
+                </h3>
+                <button
+                  className="-mt-14 -mr-2 font-semibold text-2xl text-gray-500 hover:text-gray-300"
+                  onClick={closePollModal}
+                >
+                  &times; {/* You can use 'X' here instead of 'Close' */}
+                </button>
+              </div>
+
               <div className="mb-4 flex-grow">
                 {poll.options.map((option, index) => (
                   <div
@@ -101,9 +117,12 @@ const PollDetails = ({
                   Vote
                 </button>
               )}
-              <button className="mt-5" onClick={closePollModal}>
+              {/* <button
+                className="-mb-4 mt-2 hover:text-gray-400"
+                onClick={closePollModal}
+              >
                 Close
-              </button>
+              </button> */}
             </div>
           ))}
       </div>
@@ -112,27 +131,27 @@ const PollDetails = ({
 };
 
 PollDetails.propTypes = {
-    showPollModal: PropTypes.bool.isRequired,
-    selectedPoll: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-      .isRequired,
-    currentPolls: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        name: PropTypes.string.isRequired,
-        options: PropTypes.arrayOf(PropTypes.string).isRequired,
-        hasVoted: PropTypes.bool.isRequired,
-        hasParticipated: PropTypes.bool.isRequired,
-        userVote: PropTypes.string,
-        timeRemaining: PropTypes.number.isRequired,
-      })
-    ).isRequired,
-    selectedOptions: PropTypes.objectOf(PropTypes.string).isRequired,
-    handleOptionChange: PropTypes.func.isRequired,
-    handleParticipation: PropTypes.func.isRequired,
-    handleVoting: PropTypes.func.isRequired,
-    handlePollClick: PropTypes.func.isRequired,
-    closePollModal: PropTypes.func.isRequired,
-    formatTime: PropTypes.func.isRequired,
-  };
+  showPollModal: PropTypes.bool.isRequired,
+  selectedPoll: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  currentPolls: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      name: PropTypes.string.isRequired,
+      options: PropTypes.arrayOf(PropTypes.string).isRequired,
+      hasVoted: PropTypes.bool.isRequired,
+      hasParticipated: PropTypes.bool.isRequired,
+      userVote: PropTypes.string,
+      timeRemaining: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  selectedOptions: PropTypes.objectOf(PropTypes.string).isRequired,
+  handleOptionChange: PropTypes.func.isRequired,
+  handleParticipation: PropTypes.func.isRequired,
+  handleVoting: PropTypes.func.isRequired,
+  handlePollClick: PropTypes.func.isRequired,
+  closePollModal: PropTypes.func.isRequired,
+  formatTime: PropTypes.func.isRequired,
+};
 
 export default PollDetails;

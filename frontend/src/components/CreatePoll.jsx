@@ -96,6 +96,7 @@ const CreatePoll = () => {
   // Close the success modal
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
+    //window.location.reload();
   };
 
   return (

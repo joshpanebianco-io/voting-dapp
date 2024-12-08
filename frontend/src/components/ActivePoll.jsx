@@ -121,7 +121,7 @@ const ActivePoll = ({ isConnected }) => {
       }, 900);
     };
     loadPolls();
-  }, [isConnected]);
+  }, [isConnected, hasVoted]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -163,11 +163,6 @@ const ActivePoll = ({ isConnected }) => {
     localStorage.setItem("showVoted", JSON.stringify(showVoted)); // Save as string
   }, [showVoted]);
 
-  const closePollModal = () => {
-    setShowPollModal(false);
-    setSelectedPoll(null); // Reset selected poll
-    navigate(""); // Remove pollId from the URL
-  };
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
@@ -245,6 +240,11 @@ const ActivePoll = ({ isConnected }) => {
       setShowSuccessModal("Your vote has been successfully submitted");
       // Update voting status
       setHasVoted({ ...hasVoted, [pollId]: true });
+      setPolls((prevPolls) =>
+        prevPolls.map((poll) =>
+          poll.id === pollId ? { ...poll, hasVoted: true } : poll
+        )
+      );
       // Update selected option to reflect the vote
       setSelectedOptions({
         ...selectedOptions,
@@ -266,6 +266,18 @@ const ActivePoll = ({ isConnected }) => {
 
   const closeSuccessModal = () => {
     setShowSuccessModal("");
+    
+    const poll = polls.find((p) => p.id === selectedPoll);
+    if (poll.hasVoted) {
+        closePollModal();
+    }
+    
+  };
+
+  const closePollModal = () => {
+    setShowPollModal(false);
+    setSelectedPoll(null); // Reset selected poll
+    navigate(""); // Remove pollId from the URL
   };
 
   const closeModal = () => {
@@ -334,7 +346,7 @@ const ActivePoll = ({ isConnected }) => {
                     className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
                   >
                     <h3
-                      className="text-xl font-bold text-purple-600 mb-4"
+                      className="text-xl font-bold text-purple-600 mb-4 cursor-pointer hover:text-blue-400"
                       onClick={() => handlePollClick(poll.id)}
                     >
                       {poll.name}
