@@ -18,7 +18,7 @@ const PollDetails = ({
   if (!showPollModal || !selectedPoll) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-100">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-100 z-20">
       <div className="bg-blue-600 p-6 rounded-lg shadow-lg">
         {currentPolls
           .filter((poll) => poll.id === selectedPoll)

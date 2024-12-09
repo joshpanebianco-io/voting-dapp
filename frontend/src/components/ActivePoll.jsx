@@ -7,6 +7,7 @@ import ModalLoadingSpinner from "./utility/ModalLoadingSpinner";
 import { useNavigate, useLocation } from "react-router-dom";
 import PollDetails from "./PollDetails";
 import Pagination from "./utility/Pagination";
+import { v4 as uuidv4 } from "uuid";
 
 // eslint-disable-next-line react/prop-types
 const ActivePoll = ({ isConnected }) => {
@@ -26,6 +27,7 @@ const ActivePoll = ({ isConnected }) => {
   const [showSuccessModal, setShowSuccessModal] = useState("");
   const [selectedPoll, setSelectedPoll] = useState(null);
   const [showPollModal, setShowPollModal] = useState(null);
+  const [pollIdMapping, setPollIdMapping] = useState({});
   const pollsPerPage = 6;
 
   const navigate = useNavigate();
@@ -35,6 +37,17 @@ const ActivePoll = ({ isConnected }) => {
     .VITE_POLLRETRIEVER_CONTRACT_ADDRESS;
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
+
+  const getPersistentFrontendId = (pollName) => {
+    // Check localStorage for the existing ID for this poll
+    let storedFrontendId = localStorage.getItem(pollName);
+    if (!storedFrontendId) {
+      // If not found, generate a new UUID, store it, and return it
+      storedFrontendId = uuidv4();
+      localStorage.setItem(pollName, storedFrontendId); // Store it in localStorage
+    }
+    return storedFrontendId;
+  };
 
   const fetchPolls = async () => {
     try {
@@ -59,7 +72,13 @@ const ActivePoll = ({ isConnected }) => {
 
         const pollsWithStatus = await Promise.all(
           pollsData.map(async (poll) => {
+            const frontendId = getPersistentFrontendId(poll.name);
             const pollId = poll.id.toNumber();
+
+            setPollIdMapping((prev) => ({
+              ...prev,
+              [frontendId]: pollId,
+            }));
 
             const hasUserParticipated =
               await pollManagerContract.hasParticipated(pollId, userAddress);
@@ -80,6 +99,7 @@ const ActivePoll = ({ isConnected }) => {
 
             return {
               ...poll,
+              frontendId,
               id: pollId,
               hasParticipated: hasUserParticipated,
               hasVoted: hasUserVoted,
@@ -143,13 +163,25 @@ const ActivePoll = ({ isConnected }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // useEffect(() => {
+  //   const pollIdFromUrl = new URLSearchParams(location.search).get("pollId");
+  //   if (pollIdFromUrl) {
+  //     setShowPollModal(true);
+  //     setSelectedPoll(parseInt(pollIdFromUrl, 10)); // Set the pollId from the URL
+  //   }
+  // }, [location.search]); // Re-run when the URL changes
+
   useEffect(() => {
     const pollIdFromUrl = new URLSearchParams(location.search).get("pollId");
     if (pollIdFromUrl) {
-      setShowPollModal(true);
-      setSelectedPoll(parseInt(pollIdFromUrl, 10)); // Set the pollId from the URL
+      // Decode the frontendId back to the real pollId using the mapping
+      const pollId = pollIdMapping[pollIdFromUrl];
+      if (pollId) {
+        setShowPollModal(true);
+        setSelectedPoll(pollId); // Set the actual pollId (not frontendId)
+      }
     }
-  }, [location.search]); // Re-run when the URL changes
+  }, [location.search, pollIdMapping]);
 
   useEffect(() => {
     const savedShowVoted = localStorage.getItem("showVoted");
@@ -162,7 +194,6 @@ const ActivePoll = ({ isConnected }) => {
   useEffect(() => {
     localStorage.setItem("showVoted", JSON.stringify(showVoted)); // Save as string
   }, [showVoted]);
-
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
@@ -258,20 +289,25 @@ const ActivePoll = ({ isConnected }) => {
     }
   };
 
-  const handlePollClick = (pollId) => {
-    setSelectedPoll(pollId);
-    setShowPollModal(true);
-    navigate(`?pollId=${pollId}`); // Update the URL with the pollId
+  // const handlePollClick = (pollId) => {
+  //   setSelectedPoll(pollId);
+  //   setShowPollModal(true);
+  //   navigate(`?pollId=${pollId}`); // Update the URL with the pollId
+  // };
+
+  const handlePollClick = (frontendId) => {
+    // When a poll is clicked, navigate using the frontendId (obfuscated ID)
+    setSelectedPoll(frontendId);
+    navigate(`?pollId=${frontendId}`);
   };
 
   const closeSuccessModal = () => {
     setShowSuccessModal("");
-    
+
     const poll = polls.find((p) => p.id === selectedPoll);
     if (poll.hasVoted) {
-        closePollModal();
+      closePollModal();
     }
-    
   };
 
   const closePollModal = () => {
@@ -347,7 +383,7 @@ const ActivePoll = ({ isConnected }) => {
                   >
                     <h3
                       className="text-xl font-bold text-purple-600 mb-4 cursor-pointer hover:text-blue-400"
-                      onClick={() => handlePollClick(poll.id)}
+                      onClick={() => handlePollClick(poll.frontendId)}
                     >
                       {poll.name}
                     </h3>
