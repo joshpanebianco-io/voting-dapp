@@ -17,6 +17,10 @@ const ActivePoll = ({ isConnected }) => {
   const [hasVoted, setHasVoted] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(() => {
+  //   const savedPage = localStorage.getItem("currentPage");
+  //   return savedPage ? parseInt(savedPage, 10) : 1;
+  // });
   const [showVoted, setShowVoted] = useState(() => {
     const savedShowVoted = localStorage.getItem("showVoted");
     return savedShowVoted ? JSON.parse(savedShowVoted) : false;
@@ -190,10 +194,13 @@ const ActivePoll = ({ isConnected }) => {
     }
   }, []);
 
-  // Save the 'showVoted' state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("showVoted", JSON.stringify(showVoted)); // Save as string
+    localStorage.setItem("showVoted", JSON.stringify(showVoted));
   }, [showVoted]);
+
+//  useEffect(() => {
+//     localStorage.setItem("currentPage", currentPage);
+//   }, [currentPage]);
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
