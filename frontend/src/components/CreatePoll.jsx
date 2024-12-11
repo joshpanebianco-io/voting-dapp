@@ -86,7 +86,7 @@ const CreatePoll = () => {
       setDuration("");
     } catch (err) {
       console.error("Error creating poll:", err);
-      setError("Failed to create poll.");
+      setError("Failed to create poll. please try again");
     } finally {
       setLoading(false);
       setLoadingMessage(""); // Clear the loading message
@@ -173,8 +173,6 @@ const CreatePoll = () => {
           </button>
         </div>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
         <button
           type="submit"
           className="w-full bg-gray-800 text-white font-semibold py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -182,6 +180,8 @@ const CreatePoll = () => {
         >
           {loading ? "Creating Poll..." : "Create Poll"}
         </button>
+
+        {error && <p className="text-red-500 text-center mt-6">{error}</p>}
       </form>
 
       {/* Loading Modal */}

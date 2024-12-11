@@ -11,7 +11,7 @@ const Pagination = ({ currentPage, totalPages, prevPage, nextPage }) => {
       <button
         onClick={prevPage}
         disabled={currentPage === 1}
-        className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-white text-blue-600 font-bold py-2 px-4 rounded-l-lg hover:bg-blue-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Previous
       </button>
@@ -21,7 +21,7 @@ const Pagination = ({ currentPage, totalPages, prevPage, nextPage }) => {
       <button
         onClick={nextPage}
         disabled={currentPage === totalPages}
-        className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-white text-blue-600 font-bold py-2 px-4 rounded-r-lg hover:bg-blue-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Next
       </button>

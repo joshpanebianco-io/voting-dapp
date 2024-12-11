@@ -42,13 +42,13 @@ const ActivePoll = ({ isConnected }) => {
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
-  const getPersistentFrontendId = (pollName) => {
+  const getPersistentFrontendId = (pollId) => {
     // Check localStorage for the existing ID for this poll
-    let storedFrontendId = localStorage.getItem(pollName);
+    let storedFrontendId = localStorage.getItem(pollId);
     if (!storedFrontendId) {
       // If not found, generate a new UUID, store it, and return it
       storedFrontendId = uuidv4();
-      localStorage.setItem(pollName, storedFrontendId); // Store it in localStorage
+      localStorage.setItem(pollId, storedFrontendId); // Store it in localStorage
     }
     return storedFrontendId;
   };
@@ -76,7 +76,7 @@ const ActivePoll = ({ isConnected }) => {
 
         const pollsWithStatus = await Promise.all(
           pollsData.map(async (poll) => {
-            const frontendId = getPersistentFrontendId(poll.name);
+            const frontendId = getPersistentFrontendId(poll.id);
             const pollId = poll.id.toNumber();
 
             setPollIdMapping((prev) => ({
@@ -118,16 +118,28 @@ const ActivePoll = ({ isConnected }) => {
         setPolls(pollsWithStatus);
       } else {
         // When not connected, just fetch active polls
-        const pollsWithoutStatus = pollsData.map((poll) => ({
-          ...poll,
-          id: poll.id.toNumber(),
-          duration: poll.duration.toNumber(),
-          startTime: poll.startTime.toNumber(),
-          options: poll.options,
-          hasParticipated: false,
-          hasVoted: false,
-          userVote: null,
-        }));
+        const pollsWithoutStatus = pollsData.map((poll) => {
+          const frontendId = getPersistentFrontendId(poll.id); // Generate frontendId
+          const pollId = poll.id.toNumber();
+
+          // Ensure mapping is set regardless of connection status
+          setPollIdMapping((prev) => ({
+            ...prev,
+            [frontendId]: pollId,
+          }));
+
+          return {
+            ...poll,
+            id: pollId,
+            frontendId, // Include frontendId
+            duration: poll.duration.toNumber(),
+            startTime: poll.startTime.toNumber(),
+            options: poll.options,
+            hasParticipated: false,
+            hasVoted: false,
+            userVote: null,
+          };
+        });
 
         setPolls(pollsWithoutStatus);
       }
@@ -198,9 +210,9 @@ const ActivePoll = ({ isConnected }) => {
     localStorage.setItem("showVoted", JSON.stringify(showVoted));
   }, [showVoted]);
 
-//  useEffect(() => {
-//     localStorage.setItem("currentPage", currentPage);
-//   }, [currentPage]);
+  //  useEffect(() => {
+  //     localStorage.setItem("currentPage", currentPage);
+  //   }, [currentPage]);
 
   const handleOptionChange = (pollId, option) => {
     setSelectedOptions({ ...selectedOptions, [pollId]: option });
