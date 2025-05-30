@@ -394,19 +394,19 @@ const ActivePoll = ({ isConnected }) => {
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ml-7">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-0">
                 {currentPolls.map((poll) => (
                   <div
                     key={poll.id}
-                    className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
+                    className="w-full max-w-md bg-white p-6 rounded-lg shadow-md flex flex-col mx-auto"
                   >
                     <h3
-                      className="text-xl font-bold text-purple-600 mb-4 cursor-pointer hover:text-blue-400"
+                      className="text-xl font-bold text-purple-600 mb-4 cursor-pointer hover:text-blue-400 break-words"
                       onClick={() => handlePollClick(poll.frontendId)}
                     >
                       {poll.name}
                     </h3>
-                    <div className="mb-4 flex-grow">
+                    <div className="mb-4 flex-grow truncate max-w-[70%]">
                       {poll.options.map((option, index) => (
                         <div
                           key={index}
@@ -432,7 +432,7 @@ const ActivePoll = ({ isConnected }) => {
                           />
                           <label
                             htmlFor={`${poll.id}-${option}`}
-                            className={`text-gray-800 ${
+                            className={`text-gray-800 whitespace-nowrap ${
                               poll.hasVoted && poll.userVote === option
                                 ? "font-bold text-purple-600"
                                 : ""

@@ -87,43 +87,42 @@ const ClosedPoll = () => {
       ) : (
         <>
           {/* Poll Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ml-7">
-            {currentPolls.map((poll) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-0">
+  {currentPolls.map((poll) => (
+    <div
+      key={poll.id}
+      className="w-full max-w-md bg-white p-6 rounded-lg shadow-md flex flex-col mx-auto"
+    >
+      <h3 className="text-xl font-bold text-purple-600 mb-6 break-words">
+        {poll.name}
+      </h3>
+      <div className="mb-4 flex-grow overflow-auto max-h-[250px] scrollbar-hide">
+        {poll.options.map((option, index) => (
+          <div key={index} className="mb-4">
+            <div className="flex items-center justify-between">
+              <p className="text-gray-800 mb-1 font-semibold truncate max-w-[70%]">
+                {option}
+              </p>
+              <p className="text-gray-600 font-semibold whitespace-nowrap">
+                {poll.voteCounts[index]} ({poll.percentages[index]}%)
+              </p>
+            </div>
+            <div className="w-full bg-gray-200 rounded-lg h-2">
               <div
-                key={poll.id}
-                className="w-[350px] h-[350px] bg-white p-6 rounded-lg shadow-md flex flex-col"
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-6">
-                  {poll.name}
-                </h3>
-                <div className="mb-4 flex-grow overflow-auto max-h-[250px] scrollbar-hide">
-                  {poll.options.map((option, index) => (
-                    <div key={index} className="mb-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-gray-800 mb-1 font-semibold">
-                          {option}
-                        </p>
-                        <p className="text-gray-600 font-semibold">
-                          {poll.voteCounts[index]} ({poll.percentages[index]}%)
-                        </p>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-lg h-2">
-                        <div
-                          className="bg-blue-600 h-full rounded-lg"
-                          style={{
-                            width: `${poll.percentages[index]}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-auto text-red-600 font-bold text-center">
-                  Poll Closed
-                </p>
-              </div>
-            ))}
+                className="bg-blue-600 h-full rounded-lg"
+                style={{ width: `${poll.percentages[index]}%` }}
+              />
+            </div>
           </div>
+        ))}
+      </div>
+      <p className="mt-auto text-red-600 font-bold text-center">
+        Poll Closed
+      </p>
+    </div>
+  ))}
+</div>
+
 
           {/* Pagination Controls */}
           <Pagination
