@@ -12,6 +12,18 @@ import { BrowserRouter as Router } from "react-router-dom";
 
 function App() {
   const [isConnected, setIsConnected] = useState(false); // Manage connection state
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [closedPollRefreshKey, setClosedPollRefreshKey] = useState(0);
+
+
+  const refreshActivePoll = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const refreshClosedPoll = () => {
+  setClosedPollRefreshKey(prev => prev + 1);
+};
+
 
   return (
     <Router>
@@ -35,7 +47,7 @@ function App() {
             className="min-h-screen flex items-center justify-center mt-2" // Reduced space between ConnectWallet and CreatePoll
           >
             <div className="w-full max-w-2xl">
-              <CreatePoll />
+              <CreatePoll onSuccess={refreshActivePoll} />
             </div>
           </div>
         )}
@@ -44,14 +56,14 @@ function App() {
           id="active-polls-section"
           className="min-h-screen justify-center pt-36" // Added padding-top to create space below the fixed navbar
         >
-          <ActivePoll isConnected={isConnected} />
+          <ActivePoll isConnected={isConnected} refreshKey={refreshKey} onPollClose={refreshClosedPoll} />
         </div>
         {/* Closed Polls Section */}
         <div
           id="closed-polls-section"
           className="min-h-screen justify-center pt-36" // Added padding-top to create space below the fixed navbar
         >
-          <ClosedPoll isConnected={isConnected} />
+          <ClosedPoll isConnected={isConnected} refreshKey={closedPollRefreshKey} />
         </div>
         {/* Use Case Section */}
         <div

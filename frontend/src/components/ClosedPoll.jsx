@@ -4,7 +4,7 @@ import PollRetrieverABI from "../abis/PollRetriever.json";
 import LoadingSpinner from "./utility/LoadingSpinner";
 import Pagination from "./utility/Pagination";
 
-const ClosedPoll = () => {
+const ClosedPoll = ({refreshKey}) => {
   const [polls, setPolls] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true); // Loading state
@@ -73,7 +73,7 @@ const ClosedPoll = () => {
     setTimeout(() => {
       setLoading(false); // Hide loading after 1 second
     }, 900);
-  }, []);
+  }, [refreshKey]);
 
   return (
     <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 p-8 rounded-lg shadow-lg mt-8">

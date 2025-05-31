@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import PollManagerABI from "../abis/PollManager.json";
 import ModalLoadingSpinner from "./utility/ModalLoadingSpinner";
 
-const CreatePoll = () => {
+const CreatePoll = ({onSuccess}) => {
   const [pollName, setPollName] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [duration, setDuration] = useState("");
@@ -96,6 +96,9 @@ const CreatePoll = () => {
   // Close the success modal
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
+    if (onSuccess) {
+      onSuccess();  // Notify parent to refresh ActivePoll
+    }
     //window.location.reload();
   };
 

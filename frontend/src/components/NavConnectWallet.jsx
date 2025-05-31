@@ -23,6 +23,7 @@ const NavConnectWallet = ({ setIsConnected }) => {
 
   // Connect to MetaMask wallet
   const connectWalletMetamask = async () => {
+    if (address) return;
     if (window.ethereum) {
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);

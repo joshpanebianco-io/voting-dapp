@@ -10,7 +10,7 @@ import Pagination from "./utility/Pagination";
 import { v4 as uuidv4 } from "uuid";
 
 // eslint-disable-next-line react/prop-types
-const ActivePoll = ({ isConnected }) => {
+const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   const [polls, setPolls] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [isParticipating, setIsParticipating] = useState({});
@@ -160,24 +160,40 @@ const ActivePoll = ({ isConnected }) => {
   }, [isConnected, hasVoted]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPolls((prevPolls) =>
-        prevPolls
-          .map((poll) => {
-            const timeRemaining = calculateRemainingTime(poll);
-            const isPollActive = timeRemaining > 0;
-            return {
-              ...poll,
-              timeRemaining,
-              isPollActive,
-            };
-          })
-          .filter((poll) => poll.isPollActive)
-      );
-    }, 1000);
+  const interval = setInterval(() => {
+    setPolls((prevPolls) => {
+      const updatedPolls = prevPolls.map((poll) => {
+        const timeRemaining = calculateRemainingTime(poll);
+        const isPollActive = timeRemaining > 0;
+        return {
+          ...poll,
+          timeRemaining,
+          isPollActive,
+        };
+      });
 
-    return () => clearInterval(interval);
-  }, []);
+      const activePolls = updatedPolls.filter((poll) => poll.isPollActive);
+      const closedPolls = updatedPolls.filter((poll) => !poll.isPollActive);
+
+      // 👇 Notify parent only if at least one poll just closed
+      if (closedPolls.length > 0 && typeof onPollClose === 'function') {
+        onPollClose();
+      }
+
+      return activePolls;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+  useEffect(() => {
+    // Whenever refreshKey changes, reload or refresh polls
+    if (isConnected) {
+      fetchPolls(); // Your existing function to fetch active polls
+    }
+  }, [refreshKey, isConnected]);
 
   // useEffect(() => {
   //   const pollIdFromUrl = new URLSearchParams(location.search).get("pollId");
