@@ -1,9 +1,25 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import PollManagerABI from "../abis/PollManager.json";
 
 // eslint-disable-next-line react/prop-types
 const NavConnectWallet = ({ setIsConnected }) => {
   const [address, setAddress] = useState(null);
+
+  const contractAddressPollManager = import.meta.env
+    .VITE_POLLMANAGER_CONTRACT_ADDRESS;
+
+  const claimFunds = async (signer) => {
+    try {
+      const contract = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
+      const tx = await contract.claimFunds(); // Call your contract's claim function
+      await tx.wait(); // Wait for the transaction to be mined
+      console.log("Claim successful");
+    } catch (error) {
+      console.error("Claim failed:", error);
+      alert("Claim failed: " + error.message);
+    }
+  };
 
   // Connect to MetaMask wallet
   const connectWalletMetamask = async () => {
@@ -20,6 +36,7 @@ const NavConnectWallet = ({ setIsConnected }) => {
           localStorage.setItem("walletAddress", walletAddress);
           setAddress(walletAddress);
           setIsConnected(true); // Update connection status
+          await claimFunds(signer);
         } else {
           alert("No accounts found. Please ensure MetaMask is unlocked.");
         }
