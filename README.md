@@ -1,4 +1,4 @@
-Simple voting dapp deployed on ethereum sepolia testnet though remix. 
+Simple voting dapp deployed on ethereum sepolia testnet through remix. 
 
 Requires metamask to be installed to use.
 
