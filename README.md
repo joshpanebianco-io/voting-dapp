@@ -17,5 +17,5 @@ objectives:
 
 functionality:
 - on wallet connect user is sent sepolia ether from a funding wallet so they can call required functions (substitute for gasless transactions/relayer implementation - will set up another day)
-- "Participating" in a poll will mint a unique voting NFT to use on that poll
+- "participating" in a poll will mint a unique voting NFT to use on that poll
 - "voting" will burn said voting NFT
