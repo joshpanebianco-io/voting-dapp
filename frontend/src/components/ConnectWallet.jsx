@@ -53,19 +53,36 @@ const ConnectWallet = ({ setIsConnected }) => {
         }
 
         const walletAddress = accounts[0];
-
         localStorage.setItem("walletAddress", walletAddress);
         setAddress(walletAddress);
         setIsConnected(true);
 
-        // 🔔 Automatically fund the connected wallet
-        await sendFundsToConnectedWallet(walletAddress);
+        // 🔒 Check last funding timestamp
+        const lastFundedKey = `lastFunded_${walletAddress}`;
+        const lastFundedTime = localStorage.getItem(lastFundedKey);
+        const now = Date.now();
+        const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
 
+        if (!lastFundedTime || now - parseInt(lastFundedTime, 10) > oneWeekInMs) {
+          alert("Please wait 10 seconds for funds to arrive.");
+          // Send funds if it's the first time or more than a week has passed
+          await sendFundsToConnectedWallet(walletAddress);
+          localStorage.setItem(lastFundedKey, now.toString());
+        } else {
+          const timeLeft = oneWeekInMs - (now - parseInt(lastFundedTime, 10));
+          const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+          // alert(
+          //   `You can claim funds again in ${days}d ${hours}h ${minutes}m.`
+          // );
+        }
       } catch (error) {
         console.error("Connection failed:", error);
         alert(`Failed to connect: ${error.message}`);
       }
     };
+
 
 
     // const claimFunds = async (signer) => {

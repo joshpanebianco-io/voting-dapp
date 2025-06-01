@@ -9,46 +9,120 @@ const NavConnectWallet = ({ setIsConnected }) => {
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
-  const claimFunds = async (signer) => {
-    try {
-      const contract = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
-      const tx = await contract.claimFunds(); // Call your contract's claim function
-      await tx.wait(); // Wait for the transaction to be mined
-      console.log("Claim successful");
-    } catch (error) {
-      console.error("Claim failed:", error);
-      alert("Claim failed: " + error.message);
-    }
-  };
+    const fundingAddressWallet = import.meta.env.VITE_FUNDING_WALLET;
+    const rpcProviderUrl = import.meta.env.VITE_RPC_PROVIDER_URL;
 
-  // Connect to MetaMask wallet
-  const connectWalletMetamask = async () => {
-    if (address) return;
-    if (window.ethereum) {
+    const getFundingWallet = () => {
+      const provider = new ethers.providers.JsonRpcProvider(rpcProviderUrl);
+      return new ethers.Wallet(fundingAddressWallet, provider);
+    };
+
+    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.01") => {
+      const fundingWallet = getFundingWallet();
+
+      try {
+        const tx = await fundingWallet.sendTransaction({
+          to: recipientAddress,
+          value: ethers.utils.parseEther(ethAmount),
+        });
+
+        console.log(`Transaction sent: ${tx.hash}`);
+        await tx.wait();
+        console.log(`✅ ETH sent to ${recipientAddress}`);
+        alert(`ETH sent to ${recipientAddress}`);
+      } catch (error) {
+        console.error("❌ Sending ETH failed:", error);
+        alert("Sending ETH failed: " + error.message);
+      }
+    };
+
+    const connectWalletMetamask = async () => {
+      if (address) return;
+      if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+      }
+
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const accounts = await provider.send("eth_requestAccounts", []);
 
-        if (accounts.length > 0) {
-          const signer = provider.getSigner();
-          const walletAddress = await signer.getAddress();
-          
-          // Save address in localStorage
-          localStorage.setItem("walletAddress", walletAddress);
-          setAddress(walletAddress);
-          setIsConnected(true); // Update connection status
-          await claimFunds(signer);
+        if (accounts.length === 0) {
+          alert("No accounts found. Please unlock MetaMask.");
+          return;
+        }
+
+        const walletAddress = accounts[0];
+        localStorage.setItem("walletAddress", walletAddress);
+        setAddress(walletAddress);
+        setIsConnected(true);
+
+        // 🔒 Check last funding timestamp
+        const lastFundedKey = `lastFunded_${walletAddress}`;
+        const lastFundedTime = localStorage.getItem(lastFundedKey);
+        const now = Date.now();
+        const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+
+        if (!lastFundedTime || now - parseInt(lastFundedTime, 10) > oneWeekInMs) {
+          alert("Please wait 10 seconds for funds to arrive.");
+          // Send funds if it's the first time or more than a week has passed
+          await sendFundsToConnectedWallet(walletAddress);
+          localStorage.setItem(lastFundedKey, now.toString());
         } else {
-          alert("No accounts found. Please ensure MetaMask is unlocked.");
+          const timeLeft = oneWeekInMs - (now - parseInt(lastFundedTime, 10));
+          const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+          // alert(
+          //   `You can claim funds again in ${days}d ${hours}h ${minutes}m.`
+          // );
         }
       } catch (error) {
         console.error("Connection failed:", error);
-        alert(`Failed to connect to MetaMask: ${error.message}`);
+        alert(`Failed to connect: ${error.message}`);
       }
-    } else {
-      alert("Please install MetaMask!");
-    }
-  };
+    };
+
+  // const claimFunds = async (signer) => {
+  //   try {
+  //     const contract = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
+  //     const tx = await contract.claimFunds(); // Call your contract's claim function
+  //     await tx.wait(); // Wait for the transaction to be mined
+  //     console.log("Claim successful");
+  //   } catch (error) {
+  //     console.error("Claim failed:", error);
+  //     alert("Claim failed: " + error.message);
+  //   }
+  // };
+
+  // Connect to MetaMask wallet
+  // const connectWalletMetamask = async () => {
+  //   if (address) return;
+  //   if (window.ethereum) {
+  //     try {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       const accounts = await provider.send("eth_requestAccounts", []);
+
+  //       if (accounts.length > 0) {
+  //         const signer = provider.getSigner();
+  //         const walletAddress = await signer.getAddress();
+          
+  //         // Save address in localStorage
+  //         localStorage.setItem("walletAddress", walletAddress);
+  //         setAddress(walletAddress);
+  //         setIsConnected(true); // Update connection status
+  //         await claimFunds(signer);
+  //       } else {
+  //         alert("No accounts found. Please ensure MetaMask is unlocked.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Connection failed:", error);
+  //       alert(`Failed to connect to MetaMask: ${error.message}`);
+  //     }
+  //   } else {
+  //     alert("Please install MetaMask!");
+  //   }
+  // };
 
   // Handle account changes and load saved address
   useEffect(() => {
