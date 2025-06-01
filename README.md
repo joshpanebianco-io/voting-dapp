@@ -1,10 +1,10 @@
 Simple voting dapp deployed on ethereum sepolia testnet through remix. 
 
-Requires metamask to be installed to use.
+Requires metamask to be installed to interact with.
 
 https://joshpanebianco-io.github.io/voting-dapp/
 
-Build with:
+Built with:
 - React.js
 - Ethers.js
 - Tailwind.css
