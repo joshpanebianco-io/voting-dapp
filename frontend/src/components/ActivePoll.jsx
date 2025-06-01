@@ -42,16 +42,16 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   const contractAddressPollManager = import.meta.env
     .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
-  const getPersistentFrontendId = (pollId) => {
-    // Check localStorage for the existing ID for this poll
-    let storedFrontendId = localStorage.getItem(pollId);
-    if (!storedFrontendId) {
-      // If not found, generate a new UUID, store it, and return it
-      storedFrontendId = uuidv4();
-      localStorage.setItem(pollId, storedFrontendId); // Store it in localStorage
-    }
-    return storedFrontendId;
-  };
+  // const getPersistentFrontendId = (pollId) => {
+  //   // Check localStorage for the existing ID for this poll
+  //   let storedFrontendId = localStorage.getItem(pollId);
+  //   if (!storedFrontendId) {
+  //     // If not found, generate a new UUID, store it, and return it
+  //     storedFrontendId = uuidv4();
+  //     localStorage.setItem(pollId, storedFrontendId); // Store it in localStorage
+  //   }
+  //   return storedFrontendId;
+  // };
 
   const fetchPolls = async () => {
     try {
@@ -78,13 +78,13 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
 
         const pollsWithStatus = await Promise.all(
           pollsData.map(async (poll) => {
-            const frontendId = getPersistentFrontendId(poll.id);
+            //const frontendId = getPersistentFrontendId(poll.id);
             const pollId = poll.id.toNumber();
 
-            setPollIdMapping((prev) => ({
-              ...prev,
-              [frontendId]: pollId,
-            }));
+            // setPollIdMapping((prev) => ({
+            //   ...prev,
+            //   [frontendId]: pollId,
+            // }));
 
             const hasUserParticipated =
               await pollManagerContract.hasParticipated(pollId, userAddress);
@@ -105,7 +105,7 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
 
             return {
               ...poll,
-              frontendId,
+              //frontendId,
               id: pollId,
               hasParticipated: hasUserParticipated,
               hasVoted: hasUserVoted,
@@ -121,19 +121,19 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
       } else {
         // When not connected, just fetch active polls
         const pollsWithoutStatus = pollsData.map((poll) => {
-          const frontendId = getPersistentFrontendId(poll.id); // Generate frontendId
+          //const frontendId = getPersistentFrontendId(poll.id); // Generate frontendId
           const pollId = poll.id.toNumber();
 
           // Ensure mapping is set regardless of connection status
-          setPollIdMapping((prev) => ({
-            ...prev,
-            [frontendId]: pollId,
-          }));
+          // setPollIdMapping((prev) => ({
+          //   ...prev,
+          //   [frontendId]: pollId,
+          // }));
 
           return {
             ...poll,
             id: pollId,
-            frontendId, // Include frontendId
+            //frontendId,
             duration: poll.duration.toNumber(),
             startTime: poll.startTime.toNumber(),
             options: poll.options,
@@ -209,13 +209,13 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
     const pollIdFromUrl = new URLSearchParams(location.search).get("pollId");
     if (pollIdFromUrl) {
       // Decode the frontendId back to the real pollId using the mapping
-      const pollId = pollIdMapping[pollIdFromUrl];
-      if (pollId) {
+      
+      
         setShowPollModal(true);
-        setSelectedPoll(pollId); // Set the actual pollId (not frontendId)
-      }
+        setSelectedPoll(parseInt(pollIdFromUrl, 10)); // Set the actual pollId (not frontendId)
+      
     }
-  }, [location.search, pollIdMapping]);
+  }, [location.search]);
 
   useEffect(() => {
     const savedShowVoted = localStorage.getItem("showVoted");
@@ -332,10 +332,10 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   //   navigate(`?pollId=${pollId}`); // Update the URL with the pollId
   // };
 
-  const handlePollClick = (frontendId) => {
+  const handlePollClick = (pollId) => {
     // When a poll is clicked, navigate using the frontendId (obfuscated ID)
-    setSelectedPoll(frontendId);
-    navigate(`?pollId=${frontendId}`);
+    setSelectedPoll(pollId);
+    navigate(`?pollId=${pollId}`);
   };
 
   const closeSuccessModal = () => {
@@ -420,7 +420,7 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
                   >
                     <h3
                       className="text-xl font-bold text-purple-600 mb-4 cursor-pointer hover:text-blue-400 break-words"
-                      onClick={() => handlePollClick(poll.frontendId)}
+                      onClick={() => handlePollClick(poll.id)}
                     >
                       {poll.name}
                     </h3>
