@@ -350,7 +350,7 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   const closePollModal = () => {
     setShowPollModal(false);
     setSelectedPoll(null); // Reset selected poll
-    navigate(""); // Remove pollId from the URL
+    navigate("/voting-dapp/"); // Remove pollId from the URL
   };
 
   const closeModal = () => {
