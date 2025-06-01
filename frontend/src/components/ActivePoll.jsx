@@ -55,7 +55,9 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
 
   const fetchPolls = async () => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      //const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.providers.JsonRpcProvider(import.meta.env.VITE_RPC_PROVIDER_URL);
+
       const contract = new ethers.Contract(
         contractAddressPollRetriever,
         PollRetrieverABI,
