@@ -54,101 +54,94 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   // };
 
   const fetchPolls = async () => {
-    try {
-      //const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const provider = new ethers.providers.JsonRpcProvider(import.meta.env.VITE_RPC_PROVIDER_URL);
+  try {
+    let provider;
+    let signer;
+    let userAddress = null;
 
-      const contract = new ethers.Contract(
-        contractAddressPollRetriever,
-        PollRetrieverABI,
+    // Use Web3Provider if available and connected
+    if (window.ethereum && isConnected) {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+
+      try {
+        userAddress = await signer.getAddress();
+      } catch (error) {
+        console.warn("Wallet not fully connected or address not accessible.");
+      }
+    } else {
+      // Fallback to public read-only provider
+      provider = new ethers.providers.JsonRpcProvider(import.meta.env.VITE_RPC_PROVIDER_URL);
+    }
+
+    // Fetch poll data from contract
+    const contract = new ethers.Contract(
+      contractAddressPollRetriever,
+      PollRetrieverABI,
+      provider
+    );
+
+    const pollsData = await contract.getActivePolls();
+
+    if (userAddress) {
+      // User is connected — fetch participation/voting status
+      const pollManagerContract = new ethers.Contract(
+        contractAddressPollManager,
+        PollManagerABI,
         provider
       );
 
-      const pollsData = await contract.getActivePolls();
-
-      if (isConnected) {
-        // Fetch participation and voting status only when connected
-        const signer = provider.getSigner();
-        const userAddress = await signer.getAddress();
-        const pollManagerContract = new ethers.Contract(
-          contractAddressPollManager,
-          PollManagerABI,
-          provider
-        );
-
-        const pollsWithStatus = await Promise.all(
-          pollsData.map(async (poll) => {
-            //const frontendId = getPersistentFrontendId(poll.id);
-            const pollId = poll.id.toNumber();
-
-            // setPollIdMapping((prev) => ({
-            //   ...prev,
-            //   [frontendId]: pollId,
-            // }));
-
-            const hasUserParticipated =
-              await pollManagerContract.hasParticipated(pollId, userAddress);
-            const hasUserVoted = await pollManagerContract.hasVoted(
-              pollId,
-              userAddress
-            );
-
-            let userVote = null;
-
-            if (hasUserVoted) {
-              const voteIndex = await pollManagerContract.getUserVote(
-                pollId,
-                userAddress
-              );
-              userVote = poll.options[voteIndex];
-            }
-
-            return {
-              ...poll,
-              //frontendId,
-              id: pollId,
-              hasParticipated: hasUserParticipated,
-              hasVoted: hasUserVoted,
-              duration: poll.duration.toNumber(),
-              startTime: poll.startTime.toNumber(),
-              options: poll.options,
-              userVote: userVote,
-            };
-          })
-        );
-
-        setPolls(pollsWithStatus);
-      } else {
-        // When not connected, just fetch active polls
-        const pollsWithoutStatus = pollsData.map((poll) => {
-          //const frontendId = getPersistentFrontendId(poll.id); // Generate frontendId
+      const pollsWithStatus = await Promise.all(
+        pollsData.map(async (poll) => {
           const pollId = poll.id.toNumber();
 
-          // Ensure mapping is set regardless of connection status
-          // setPollIdMapping((prev) => ({
-          //   ...prev,
-          //   [frontendId]: pollId,
-          // }));
+          const hasUserParticipated = await pollManagerContract.hasParticipated(pollId, userAddress);
+          const hasUserVoted = await pollManagerContract.hasVoted(pollId, userAddress);
+
+          let userVote = null;
+          if (hasUserVoted) {
+            const voteIndex = await pollManagerContract.getUserVote(pollId, userAddress);
+            userVote = poll.options[voteIndex];
+          }
 
           return {
             ...poll,
             id: pollId,
-            //frontendId,
             duration: poll.duration.toNumber(),
             startTime: poll.startTime.toNumber(),
             options: poll.options,
-            hasParticipated: false,
-            hasVoted: false,
-            userVote: null,
+            hasParticipated: hasUserParticipated,
+            hasVoted: hasUserVoted,
+            userVote,
           };
-        });
+        })
+      );
 
-        setPolls(pollsWithoutStatus);
-      }
-    } catch (error) {
-      console.error("Error fetching polls:", error);
+      setPolls(pollsWithStatus);
+    } else {
+      // User not connected — skip address-dependent fields
+      const pollsWithoutStatus = pollsData.map((poll) => {
+        const pollId = poll.id.toNumber();
+
+        return {
+          ...poll,
+          id: pollId,
+          duration: poll.duration.toNumber(),
+          startTime: poll.startTime.toNumber(),
+          options: poll.options,
+          hasParticipated: false,
+          hasVoted: false,
+          userVote: null,
+        };
+      });
+
+      setPolls(pollsWithoutStatus);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching polls:", error);
+  }
+};
+
 
   useEffect(() => {
     const loadPolls = async () => {
