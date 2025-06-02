@@ -5,13 +5,12 @@ import Navbar from "./components/NavBar";
 import CreatePoll from "./components/CreatePoll";
 import ActivePoll from "./components/ActivePoll";
 import ClosedPoll from "./components/ClosedPoll";
-import ActiveWallets from "./components/ActiveWallets"; // Import ActiveWallets component
 import UseCase from "./components/UseCase";
 import { BrowserRouter as Router } from "react-router-dom";
 
 
 function App() {
-  const [isConnected, setIsConnected] = useState(false); // Manage connection state
+  const [isConnected, setIsConnected] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [closedPollRefreshKey, setClosedPollRefreshKey] = useState(0);
 
