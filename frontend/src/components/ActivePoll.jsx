@@ -369,10 +369,28 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
   };
 
   const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+
+    let timeString = "";
+
+    if (days > 0) {
+      timeString += `${days}d `;
+    }
+    if (hours > 0 || days > 0) {
+      timeString += `${hours}h `;
+    }
+    if (minutes > 0 || hours > 0 || days > 0) {
+      timeString += `${minutes}m `;
+    }
+
+    timeString += `${remainingSeconds}s`;
+
+    return timeString.trim();
   };
+
 
   const calculateRemainingTime = (poll) => {
     const currentTime = Math.floor(Date.now() / 1000);
