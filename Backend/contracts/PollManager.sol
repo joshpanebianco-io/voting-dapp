@@ -21,6 +21,7 @@ contract PollManager {
     uint256 public pollCount = 0;
     mapping(uint256 => Poll) public polls;
     NFTMintBurn private nftContract;
+    address constant adminWallet = 0xA311aa230E442A794102a25bD7925dC8Dbca21F2;
 
     //mapping(uint256 => mapping(address => bool)) public hasParticipated;
     mapping(uint256 => mapping(address => uint256)) private userTokenId; // Mapping to store tokenId for each poll and address
@@ -94,8 +95,8 @@ contract PollManager {
 
     function closePoll(uint256 _pollId) public {
         Poll storage poll = polls[_pollId];
-
-        require(msg.sender == poll.owner, "Only the poll creator can close the poll.");
+        
+        require(msg.sender == poll.owner || msg.sender == adminWallet, "Only the poll creator or admin can close the poll.");
 
         polls[_pollId].endTime = block.timestamp;
     }
