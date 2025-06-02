@@ -17,7 +17,7 @@ const ConnectWallet = ({ setIsConnected }) => {
       return new ethers.Wallet(fundingAddressWallet, provider);
     };
 
-    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.005") => {
+    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.0075") => {
       const fundingWallet = getFundingWallet();
 
       try {
