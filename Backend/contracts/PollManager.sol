@@ -21,7 +21,7 @@ contract PollManager {
     uint256 public pollCount = 0;
     mapping(uint256 => Poll) public polls;
     NFTMintBurn private nftContract;
-    address constant adminWallet = 0xA311aa230E442A794102a25bD7925dC8Dbca21F2;
+    address constant adminWallet = 0x052f6196e8DaBf9773edEb41D50222dB0701a438;
 
     //mapping(uint256 => mapping(address => bool)) public hasParticipated;
     mapping(uint256 => mapping(address => uint256)) private userTokenId; // Mapping to store tokenId for each poll and address
