@@ -83,47 +83,6 @@ const NavConnectWallet = ({ setIsConnected }) => {
       }
     };
 
-  // const claimFunds = async (signer) => {
-  //   try {
-  //     const contract = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
-  //     const tx = await contract.claimFunds(); // Call your contract's claim function
-  //     await tx.wait(); // Wait for the transaction to be mined
-  //     console.log("Claim successful");
-  //   } catch (error) {
-  //     console.error("Claim failed:", error);
-  //     alert("Claim failed: " + error.message);
-  //   }
-  // };
-
-  // Connect to MetaMask wallet
-  // const connectWalletMetamask = async () => {
-  //   if (address) return;
-  //   if (window.ethereum) {
-  //     try {
-  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
-  //       const accounts = await provider.send("eth_requestAccounts", []);
-
-  //       if (accounts.length > 0) {
-  //         const signer = provider.getSigner();
-  //         const walletAddress = await signer.getAddress();
-          
-  //         // Save address in localStorage
-  //         localStorage.setItem("walletAddress", walletAddress);
-  //         setAddress(walletAddress);
-  //         setIsConnected(true); // Update connection status
-  //         await claimFunds(signer);
-  //       } else {
-  //         alert("No accounts found. Please ensure MetaMask is unlocked.");
-  //       }
-  //     } catch (error) {
-  //       console.error("Connection failed:", error);
-  //       alert(`Failed to connect to MetaMask: ${error.message}`);
-  //     }
-  //   } else {
-  //     alert("Please install MetaMask!");
-  //   }
-  // };
-
   // Handle account changes and load saved address
   useEffect(() => {
     const handleAccountsChanged = (accounts) => {

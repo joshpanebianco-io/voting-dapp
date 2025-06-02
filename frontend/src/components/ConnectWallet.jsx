@@ -17,7 +17,7 @@ const ConnectWallet = ({ setIsConnected }) => {
       return new ethers.Wallet(fundingAddressWallet, provider);
     };
 
-    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.01") => {
+    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.005") => {
       const fundingWallet = getFundingWallet();
 
       try {
@@ -82,52 +82,6 @@ const ConnectWallet = ({ setIsConnected }) => {
         alert(`Failed to connect: ${error.message}`);
       }
     };
-
-
-
-    // const claimFunds = async (signer) => {
-    //   try {
-    //     const contract = new ethers.Contract(contractAddressPollManager, PollManagerABI, signer);
-    //     const tx = await contract.claimFunds(); // Call your contract's claim function
-    //     await tx.wait(); // Wait for the transaction to be mined
-    //     console.log("Claim successful");
-    //   } catch (error) {
-    //     console.error("Claim failed:", error);
-    //     alert("Claim failed: " + error.message);
-    //   }
-    // };
-
-  
-    // const connectWalletMetamask = async () => {
-    //   if (address) return;
-    //   if (window.ethereum) {
-    //     try {
-    //       const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //       const accounts = await provider.send("eth_requestAccounts", []);
-    //       if (accounts.length > 0) {
-    //         const signer = provider.getSigner();
-    //         const walletAddress = await signer.getAddress();
-
-    //         localStorage.setItem("walletAddress", walletAddress);
-    //         setAddress(walletAddress);
-    //         setIsConnected(true); // Update connection status
-    //         // Auto-call claim function here
-    //         await claimFunds(signer);
-    //       } else {
-    //         alert("No accounts found. Please ensure MetaMask is unlocked.");
-    //       }
-    //     } catch (error) {
-    //       console.error("Connection failed:", error);
-    //       alert(`Failed to connect to MetaMask: ${error.message}`);
-    //     }
-    //   } else {
-    //     alert("Please install MetaMask!");
-    //   }
-    // };
-
-
-    
-
 
   useEffect(() => {
     const handleAccountsChanged = (accounts) => {

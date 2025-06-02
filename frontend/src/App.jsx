@@ -72,11 +72,6 @@ function App() {
         >
           <UseCase />
         </div>
-        {/* Additional space below */}
-        <div className="bg-gray-800 mt-8 py-16"></div>
-        {/* Active Wallets Floating Component */}
-        {/* <ActiveWallets isConnected={isConnected} />{" "} */}
-        {/* Floating active wallet count */}
       </div>
     </Router>
   );
