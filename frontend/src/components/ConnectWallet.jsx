@@ -6,53 +6,50 @@ import PollManagerABI from "../abis/PollManager.json";
 const ConnectWallet = ({ setIsConnected }) => {
   const [address, setAddress] = useState(null);
 
-  const contractAddressPollManager = import.meta.env.VITE_POLLMANAGER_CONTRACT_ADDRESS;
-  const fundingAddressWallet = import.meta.env.VITE_FUNDING_WALLET;
-  const rpcProviderUrl = import.meta.env.VITE_RPC_PROVIDER_URL;
+    const contractAddressPollManager = import.meta.env
+    .VITE_POLLMANAGER_CONTRACT_ADDRESS;
 
-  const getFundingWallet = () => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcProviderUrl);
-    return new ethers.Wallet(fundingAddressWallet, provider);
-  };
+    const fundingAddressWallet = import.meta.env.VITE_FUNDING_WALLET;
+    const rpcProviderUrl = import.meta.env.VITE_RPC_PROVIDER_URL;
 
-  const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.0075") => {
-    const fundingWallet = getFundingWallet();
+    const getFundingWallet = () => {
+      const provider = new ethers.providers.JsonRpcProvider(rpcProviderUrl);
+      return new ethers.Wallet(fundingAddressWallet, provider);
+    };
 
-    try {
-      const tx = await fundingWallet.sendTransaction({
-        to: recipientAddress,
-        value: ethers.utils.parseEther(ethAmount),
-      });
+    const sendFundsToConnectedWallet = async (recipientAddress, ethAmount = "0.0075") => {
+      const fundingWallet = getFundingWallet();
 
-      console.log(`Transaction sent: ${tx.hash}`);
-      await tx.wait();
-      console.log(`✅ ETH sent to ${recipientAddress}`);
-      alert(`ETH sent to ${recipientAddress}`);
-    } catch (error) {
-      console.error("❌ Sending ETH failed:", error);
-      alert("Sending ETH failed: " + error.message);
-    }
-  };
+      try {
+        const tx = await fundingWallet.sendTransaction({
+          to: recipientAddress,
+          value: ethers.utils.parseEther(ethAmount),
+        });
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  const isMetaMaskInAppBrowser = () => {
-    return window.ethereum && window.ethereum.isMetaMask && /MetaMask/i.test(navigator.userAgent);
-  };
-
-  const dappDomain = "https://joshpanebianco-io.github.io/voting-dapp/"; // 👈 No https://
+        console.log(`Transaction sent: ${tx.hash}`);
+        await tx.wait();
+        console.log(`✅ ETH sent to ${recipientAddress}`);
+        alert(`ETH sent to ${recipientAddress}`);
+      } catch (error) {
+        console.error("❌ Sending ETH failed:", error);
+        alert("Sending ETH failed: " + error.message);
+      }
+    };
 
   const connectWalletMetamask = async () => {
     if (address) return;
 
-    if (isMobile && !isMetaMaskInAppBrowser()) {
-      // Redirect to MetaMask app with deep link
-      window.location.href = `https://metamask.app.link/dapp/${dappDomain}`;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const dappUrl = "https://c0f3-2001-8003-ec76-a601-adb8-a4d0-2a07-74f.ngrok-free.app"; // Ensure to use your actual domain
+
+    if (isMobile && !window.ethereum) {
+      // Redirect to MetaMask app via deep link
+      window.location.href = `https://metamask.app.link/dapp/${dappUrl}`;
       return;
     }
 
     if (!window.ethereum) {
-      alert("Please install MetaMask!");
+      alert("Please install the MetaMask browser extension.");
       return;
     }
 
@@ -70,32 +67,36 @@ const ConnectWallet = ({ setIsConnected }) => {
       setAddress(walletAddress);
       setIsConnected(true);
 
-      // Check for weekly funding
-      const lastFundedKey = `lastFunded_${walletAddress}`;
-      const lastFundedTime = localStorage.getItem(lastFundedKey);
-      const now = Date.now();
-      const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+      // Handle funds or additional checks as needed
+      await handleFunds(walletAddress); // Custom funds handling
 
-      if (!lastFundedTime || now - parseInt(lastFundedTime, 10) > oneWeekInMs) {
-        alert("Please wait 10 seconds for funds to arrive.");
-        await sendFundsToConnectedWallet(walletAddress);
-        localStorage.setItem(lastFundedKey, now.toString());
-      }
+      // Check for weekly funding
+      // const lastFundedKey = `lastFunded_${walletAddress}`;
+      // const lastFundedTime = localStorage.getItem(lastFundedKey);
+      // const now = Date.now();
+      // const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+
+      // if (!lastFundedTime || now - parseInt(lastFundedTime, 10) > oneWeekInMs) {
+      //   alert("Please wait 10 seconds for funds to arrive.");
+      //   await sendFundsToConnectedWallet(walletAddress);
+      //   localStorage.setItem(lastFundedKey, now.toString());
+      // }
     } catch (error) {
       console.error("Connection failed:", error);
       alert(`Failed to connect: ${error.message}`);
     }
   };
 
+
   useEffect(() => {
     const handleAccountsChanged = (accounts) => {
       if (accounts.length === 0) {
         setAddress(null);
-        setIsConnected(false);
+        setIsConnected(false); // Update connection status
         localStorage.removeItem("walletAddress");
       } else {
         setAddress(accounts[0]);
-        setIsConnected(true);
+        setIsConnected(true); // Update connection status
         localStorage.setItem("walletAddress", accounts[0]);
       }
     };
@@ -103,7 +104,7 @@ const ConnectWallet = ({ setIsConnected }) => {
     const savedAddress = localStorage.getItem("walletAddress");
     if (savedAddress) {
       setAddress(savedAddress);
-      setIsConnected(true);
+      setIsConnected(true); // Update connection status
     }
 
     if (window.ethereum) {
@@ -112,26 +113,35 @@ const ConnectWallet = ({ setIsConnected }) => {
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
       }
     };
   }, [setIsConnected]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
+      {/* Large Text Above Button */}
       <div className="text-center text-white font-bold text-7xl sm:text-8xl mb-20 -mt-20 opacity-20">
         <p>Welcome to the future of Voting</p>
+        {/* Smaller Text */}
       </div>
 
+      {/* Connect Wallet Button */}
       <button
         onClick={connectWalletMetamask}
         className="w-80 px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 text-white font-semibold text-xl rounded-lg shadow-md hover:from-purple-600 hover:via-blue-500 hover:to-purple-600 focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
       >
         {address
-          ? `Connected: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+          ? `Connected: ${address.substring(0, 6)}...${address.substring(
+              address.length - 4
+            )}`
           : "Connect Wallet"}
       </button>
 
+      {/* Large Text Below Button */}
       <div className="text-center text-white font-bold text-4xl sm:text-5xl mt-20 opacity-40">
         <p>Secure. Transparent. Immutable.</p>
       </div>
