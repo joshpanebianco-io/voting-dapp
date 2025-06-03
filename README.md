@@ -19,6 +19,6 @@ functionality:
 - on wallet connect user is sent sepolia ether from a funding wallet so they can call required functions (substitute for gasless transactions/relayer implementation - will set up another day)
 - "participating" in a poll will mint a unique voting NFT to use on that poll
 - "voting" will burn said voting NFT
-- When using app on mobile Browser:
+- When using app on mobile browser:
   - (MetaMask not installed) - connect wallet button will take you to appstore/googleplay store download page 
   - (MetaMask installed) - will deeplink navigate to the browser inside the MetaMask app where you can then connect to the app 
