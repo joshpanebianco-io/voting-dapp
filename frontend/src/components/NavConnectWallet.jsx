@@ -39,7 +39,9 @@ const NavConnectWallet = ({ setIsConnected }) => {
     const connectWalletMetamask = async () => {
       if (address) return;
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const dappUrl = "https://c0f3-2001-8003-ec76-a601-adb8-a4d0-2a07-74f.ngrok-free.app"; // Ensure to use your actual domain
+      const dappUrl = "https://joshpanebianco-io.github.io/voting-dapp/"; // Ensure to use your actual domain
+      //ngrok local testing
+      //const dappUrl = "https://c0f3-2001-8003-ec76-a601-adb8-a4d0-2a07-74f.ngrok-free.app"; // Ensure to use your actual domain
 
       if (isMobile && !window.ethereum) {
         // Redirect to MetaMask app via deep link
