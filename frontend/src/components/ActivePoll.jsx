@@ -291,7 +291,7 @@ const ActivePoll = ({ isConnected, refreshKey, onPollClose }) => {
 
   const handlePollClick = (pollId) => {
     setSelectedPoll(pollId);
-    navigate(`active?pollId=${pollId}`);
+    navigate(`/voting-dapp/active?pollId=${pollId}`);
   };
 
   const closeSuccessModal = () => {
