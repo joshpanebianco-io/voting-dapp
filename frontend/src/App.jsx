@@ -36,8 +36,8 @@ function App() {
         />
         {/* ConnectWallet component */}
         <div className="relative z-10 flex justify-center mt-5 sm:pt-0 sm:pb-0 pt-12 pb-48">
-  <ConnectWallet setIsConnected={setIsConnected} />
-</div>
+          <ConnectWallet setIsConnected={setIsConnected} />
+        </div>
 
         {/* Conditionally render CreatePoll only if connected */}
         {isConnected && (
