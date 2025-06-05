@@ -26,7 +26,7 @@ Requires [MetaMask](https://metamask.io/) to interact.
 
 ## ⚙️ Functionality
 
-- On wallet connection, the user is **automatically funded with Sepolia ETH** from a backend wallet to cover gas  
+- On wallet connection, the user is **automatically funded with Sepolia ETH** from a funding wallet to cover gas  
   (acts as a placeholder for gasless/relayer implementation)
 - "Participating" in a poll **mints a unique NFT** representing your vote eligibility
 - "Voting" on a poll **burns the NFT**, finalizing the vote
