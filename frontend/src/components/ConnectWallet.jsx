@@ -75,7 +75,7 @@ const ConnectWallet = ({ setIsConnected }) => {
       }
     } catch (error) {
       console.error("Connection failed:", error);
-      alert(`Failed to connect: ${error.message}`);
+      // alert(`Failed to connect: ${error.message}`);
     }
   };
 
@@ -128,9 +128,10 @@ const ConnectWallet = ({ setIsConnected }) => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <div className="text-center text-white font-bold text-7xl sm:text-8xl mb-20 -mt-20 opacity-20">
+      <div className="text-center text-white font-bold text-6xl sm:text-8xl mb-20 mt-16 sm:mt-8 opacity-20">
         <p>Welcome to the future of Voting</p>
-      </div>
+    </div>
+
 
       <button
         onClick={connectWalletMetamask}
