@@ -35,10 +35,10 @@ function App() {
           className="sticky top-0 z-50 w-full h-16" // Fixed height for navbar and full width
         />
         {/* ConnectWallet component */}
-        <div className="relative z-10 flex justify-center mt-5">
-          {/* Adjusted padding-top to create space below navbar */}
-          <ConnectWallet setIsConnected={setIsConnected} />
-        </div>
+        <div className="relative z-10 flex justify-center mt-5 sm:pt-0 sm:pb-0 pt-12 pb-48">
+  <ConnectWallet setIsConnected={setIsConnected} />
+</div>
+
         {/* Conditionally render CreatePoll only if connected */}
         {isConnected && (
           <div
