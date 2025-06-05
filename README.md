@@ -1,24 +1,35 @@
-Simple voting dapp deployed on ethereum sepolia testnet through remix. 
+🗳 Voting DApp
+A simple decentralized voting application deployed on the Ethereum Sepolia Testnet using Remix.
+Requires MetaMask to interact.
 
-Requires metamask to be installed to interact with.
+🔗 Live App: https://joshpanebianco-io.github.io/voting-dapp/
 
-https://joshpanebianco-io.github.io/voting-dapp/
+🚀 Tech Stack
+React.js
 
-Built with:
-- React.js
-- Ethers.js
-- Tailwind.css
-- Solidity  
+Ethers.js
 
-Objectives:
-- learn the solidity programming language
-- learn more about the ethereum blockchain ecosystem and smart contract development
-- gain more familiarity with Reactjs and web3 front end frameworks such as ethers.js etc
+Tailwind CSS
 
-Functionality:
-- on wallet connect user is sent sepolia ether from a funding wallet so they can call required functions (substitute for gasless transactions/relayer implementation - will set up another day)
-- "participating" in a poll will mint a unique voting NFT to use on that poll
-- "voting" will burn said voting NFT
-- when using app on mobile browser:
-  - (MetaMask not installed) - connect wallet button will take you to appstore/googleplay store download page 
-  - (MetaMask installed) - will deeplink navigate to the browser inside the MetaMask app where you can then connect to the app 
+Solidity
+
+🎯 Objectives
+Learn Solidity and smart contract development
+
+Understand the Ethereum blockchain ecosystem
+
+Gain hands-on experience with React.js and Web3 front-end libraries like ethers.js
+
+⚙️ Functionality
+On wallet connection, the user is automatically funded with Sepolia ETH from a backend wallet to cover gas (as a placeholder for gasless/relayer implementation)
+
+"Participating" in a poll mints a unique NFT representing your vote eligibility
+
+"Voting" on a poll burns the NFT, finalizing the vote
+
+📱 Mobile Experience
+If MetaMask is not installed:
+The "Connect Wallet" button redirects to the App Store or Google Play
+
+If MetaMask is installed:
+Automatically deep-links into MetaMask’s internal browser for a smoother dApp connection
