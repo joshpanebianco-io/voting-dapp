@@ -26,6 +26,7 @@ Requires [MetaMask](https://metamask.io/) to interact.
 
 ## ⚙️ Functionality
 
+- **Create new polls** directly from the UI — define a title, duration and options, and deploy them to the blockchain
 - On wallet connection, the user is **automatically funded with Sepolia ETH** from a funding wallet to cover gas  
   (acts as a placeholder for gasless/relayer implementation)
 - "Participating" in a poll **mints a unique NFT** representing your vote eligibility
