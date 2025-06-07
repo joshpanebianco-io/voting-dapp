@@ -26,7 +26,7 @@ Requires [MetaMask](https://metamask.io/) to interact.
 
 ## ⚙️ Functionality
 
-- **Connect Wallet** - Connects to the site through your MetaMask Wallet; the user is then **automatically funded with Sepolia ETH** from a funding wallet to cover gas  
+- **Connect Wallet** - Connects to the app through your MetaMask Wallet; the user is then **automatically funded with Sepolia ETH** from a funding wallet to cover gas  
   (acts as a placeholder for gasless/relayer implementation)
 - **Create Poll** - define a title, duration and options, and deploy them to the blockchain
 - **Participate** in a poll **mints a unique NFT** representing your vote eligibility
