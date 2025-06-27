@@ -18,7 +18,7 @@ Requires [MetaMask](https://metamask.io/) to interact.
 
 ## 🎯 Objectives
 
-- Learn **Solidity** and smart contract development  
+- Learn **Solidity** and **smart contract development**  
 - Understand the **Ethereum blockchain ecosystem**  
 - Gain hands-on experience with **React.js** and **Web3 front-end libraries** like `ethers.js`
 
