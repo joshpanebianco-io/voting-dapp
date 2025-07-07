@@ -1,4 +1,4 @@
-# 🗳 Voting DApp
+# 🗳 Voting DApp - DecentraVote
 
 A simple decentralized voting application deployed on the Ethereum **Sepolia Testnet** using **Remix**.  
 Requires [MetaMask](https://metamask.io/) to interact.
