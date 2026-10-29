@@ -1,3 +1,95 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --c-bg: 246 247 251;
+  --c-surface: 255 255 255;
+  --c-surface-2: 241 243 249;
+  --c-edge: 228 231 238;
+  --c-fg: 15 23 42;
+  --c-muted: 100 116 139;
+  --c-accent: 79 70 229;
+  --c-accent-hover: 67 56 202;
+  --c-accent-fg: 255 255 255;
+  --c-success: 5 150 105;
+  --c-warning: 217 119 6;
+  --c-danger: 225 29 72;
+}
+
+.dark {
+  color-scheme: dark;
+  --c-bg: 10 13 20;
+  --c-surface: 17 22 31;
+  --c-surface-2: 23 29 41;
+  --c-edge: 36 44 60;
+  --c-fg: 232 236 243;
+  --c-muted: 139 149 167;
+  --c-accent: 129 140 248;
+  --c-accent-hover: 165 180 252;
+  --c-accent-fg: 15 23 42;
+  --c-success: 52 211 153;
+  --c-warning: 251 191 36;
+  --c-danger: 251 113 133;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+
+  ::selection {
+    @apply bg-accent/20;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--c-edge) / 0.7) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--c-edge) / 0.7) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

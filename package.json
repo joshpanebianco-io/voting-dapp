@@ -1,6 +1,13 @@
 {
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "prop-types": "^15.8.1"
+  "name": "decentravote",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Decentralised polling on Ethereum: Solidity contracts in Backend/, React frontend in frontend/",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test": "npm --prefix Backend test",
+    "install:all": "npm --prefix frontend install && npm --prefix Backend install"
   }
 }
